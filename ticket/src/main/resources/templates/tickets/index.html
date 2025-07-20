@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/head :: head('Home')}">
+
+<body class="bg-secondary-subtle">
+    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+
+    <main class="container">
+        <h1 class="text-center">Indice dei ticket</h1>
+        <a href="tickets/create" class="btn btn-primary mb-3">Crea Ticket</a>
+
+        <table class="table table-info table-striped">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Titolo ticket</th>
+                    <th>Prodotto di riferimento</th>
+                    <th>Data Creazione</th>
+                    <th>Stato</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ticket : ${tickets}" th:object="${ticket}">
+                    <td>[[*{id}]]</td>
+                    <td>[[*{titolo}]]</td>
+                    <td>[[*{nomeProdotto}]]</td>
+                    <td>[[*{dataCreazione}]]</td>
+                    <td>[[*{stato}]]</td>
+                    <td>
+                        <a th:href="@{tickets/{id}(id=*{id})}" class="btn btn-primary">Mostra</a>
+                        <a th:href="@{tickets/{id}/edit(id=*{id})}" class="btn btn-warning">Modifica</a>
+                        <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
+                            th:data-bs-target="'#delete-modal-'+ *{id}">
+                            Elimina
+                        </button>
+
+                        <!-- Modale eliminazione ticket -->
+                        <div class="modal fade" th:id="'delete-modal-' + *{id}" data-bs-backdrop="static"
+                            data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Elimnare il ticket:
+                                            <strong>"[[*{titolo}]]"</strong>
+
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>
+                                            Sei sicuro di voler eliminare il ticket
+                                            <strong>"[[*{titolo}]]"</strong> con id: <strong>"[[*{id}]]"</strong>?
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Chiudi</button>
+                                        <form th:action="@{|/tickets/*{id}/delete|}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-danger btn">Elimina</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+
+    </main>
+
+    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+</body>
+
+</html>

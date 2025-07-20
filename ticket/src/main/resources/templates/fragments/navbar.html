@@ -1,0 +1,47 @@
+<th:block th:fragment="navbar">
+
+    <nav class="navbar  bg-dark border-bottom border-body navbar-expand-lg" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Help desk</a>
+
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/tickets}">Ticket</a>
+                    </li>
+                </ul>
+
+                <div sec:authorize="isAuthenticated()" class="mx-2">
+                    <a th:href="@{/user/show}" class="btn btn-warning">Dettagli utente</a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()" class="user-details text-light-emphasis">
+
+                    Nome utente: <span sec:authentication="name" class="me-3"></span>
+                    Ruolo: <span sec:authentication="principal.authorities" class="me-3"></span>
+
+                    <form class="d-inline" th:action="@{/logout}" method="POST">
+                        <button type="submit" class="btn btn-primary">Logout</button>
+                    </form>
+
+                </div>
+            </div>
+
+
+        </div>
+    </nav>
+
+
+
+
+</th:block>

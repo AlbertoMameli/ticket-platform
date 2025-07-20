@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/head :: head('Modifica stato')}">
+
+<body class="bg-secondary-subtle">
+    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+    <main class="container">
+        <h1 class="text-center">Aggiorna il tuo stato [[${utente.nome}]]</h1>
+        <h3 class="text-center">Stato attuale: [[${utente.statoPersonale}]]</h3>
+        <form class="text-center" th:action="@{/user/edit}" method="POST" th:object="${utente}">
+            <input type="hidden" th:field="*{nome}">
+            <input type="hidden" th:field="*{email}">
+            <input type="hidden" th:field="*{password}">
+            <input type="hidden" th:field="*{id}">
+            <label for="stato_personale" class="form-label">Seleziona il tuo stato attuale: </label>
+            <select th:field="*{statoPersonale}" id="stato_personale">
+                <option value="Attivo">Attivo</option>
+                <option value="Non Attivo">Non attivo</option>
+            </select>
+            </div>
+            <button type="submit" class="btn btn-warning">Aggiorna</button>
+        </form>
+
+    </main>
+
+
+    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+</body>
+
+</html>

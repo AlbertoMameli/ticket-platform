@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/head :: head('Crea nota')}">
+
+<body>
+
+    <nav th:insert="~{fragments/navbar :: navbar}"></nav>
+    <main class="container">
+
+        <h1>Crea una nuova nota</h1>
+        <form th:action="@{/note}" method="POST" th:object="${nota}">
+            <input type="hidden" th:field="*{id}">
+            <div class="mb-3">
+                <label for="titolo">Titolo</label>
+                <input type="text" id="titolo" class="form-control" th:field="*{titolo}" th:errorClass="is-invalid">
+
+                <div th:if="${#fields.hasErrors('titolo')}" class="invalid-feedback">
+                    <ul>
+                        <li th:each="error : ${#fields.errors('titolo')}" th:text="${error}"></li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label for="testo_nota">Testo nota:</label>
+                <textarea id="test_nota" class="form-control" th:field="*{testoNota}" th:errorClass="is-invalid">
+                </textarea>
+
+                <div th:if="${#fields.hasErrors('testoNota')}" class="invalid-feedback">
+                    <ul>
+                        <li th:each="error : ${#fields.errors('testoNota')}" th:text="${error}"></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="data_creazione">Data creazione</label>
+                <input type="datetime-local" id="data_creazione" class="form-control" th:field="*{dataCreazione}"
+                    th:errorClass="is-invalid">
+
+                <div th:if="${#fields.hasErrors('dataCreazione')}" class="invalid-feedback">
+                    <ul>
+                        <li th:each="error : ${#fields.errors('dataCreazione')}" th:text="${error}"></li>
+                    </ul>
+                </div>
+            </div>
+            <input type="hidden" th:field="*{ticket}">
+
+
+            <div class="mb-3">
+                <button class="btn btn-primary" type="submit">Modifica</button>
+            </div>
+        </form>
+
+
+    </main>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments/head :: head('Home')}">
+
+<body class="bg-secondary-subtle">
+    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+
+    <main class="container">
+        <h1 class="text-center">Dettagli Utente</h1>
+
+        <table class="table table-info table-striped">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Stato personale</th>
+                    <th></th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:object="${utente}">
+                    <td>[[*{id}]]</td>
+                    <td>[[*{nome}]]</td>
+                    <td>[[*{email}]]</td>
+                    <td>[[*{statoPersonale}]]</td>
+                    <td>
+                        <a th:href="@{/user/edit}"  class="btn btn-warning">Modifica stato</a>
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
+
+    </main>
+
+    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+</body>
+
+</html>
