@@ -47,7 +47,7 @@ public class UserController {
         int nTicketNonCompleti = 0;
         if (user.get().getStatoPersonale().equals("Attivo")) {
             for (Ticket singleTicket : ticketRepository.findAll()) {
-                if (singleTicket.getUser().equals(user.get()) && !singleTicket.getStato().equals("Completato")) {
+                if (singleTicket.getUser().equals(user.get()) && !singleTicket.getStati().equals("Completato")) {
                     nTicketNonCompleti = +1;
 
                 }

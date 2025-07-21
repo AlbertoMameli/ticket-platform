@@ -33,9 +33,6 @@ public class Ticket {
     @PastOrPresent(message = "La data di creazione non può essere nel futuro")
     private LocalDateTime dataCreazione;
 
-    @NotNull(message = "Lo stato non può essere vuoto!")
-    private String stato;
-
     @OneToMany(mappedBy = "ticket")
     private List<Nota> note;
 
@@ -44,6 +41,9 @@ public class Ticket {
     @NotNull(message = "Inserisci un operatore")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "stati_id", nullable = false)
+    private StatoTicket stati;
 
     public User getUser() {
         return this.user;
@@ -52,7 +52,6 @@ public class Ticket {
     public void setUser(User user) {
         this.user = user;
     }
-    
 
     public List<Nota> getNote() {
         return this.note;
@@ -94,12 +93,12 @@ public class Ticket {
         this.dataCreazione = dataCreazione;
     }
 
-    public String getStato() {
-        return this.stato;
+    public StatoTicket getStati() {
+        return this.stati;
     }
 
-    public void setStato(String stato) {
-        this.stato = stato;
+    public void setStati(StatoTicket stati) {
+        this.stati = stati;
     }
 
 }
