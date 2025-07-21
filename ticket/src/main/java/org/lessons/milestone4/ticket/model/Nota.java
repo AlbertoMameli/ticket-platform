@@ -2,6 +2,7 @@ package org.lessons.milestone4.ticket.model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,76 +10,72 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 
 @Entity
-@Table (name = "note")
+@Table(name = "note")
 public class Nota {
-    
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank (message = "Il titolo non può essere vuoto!")
-    private String titolo;
+    @NotBlank(message = "Il testo della nota non può essere vuoto!")
+    @Column(columnDefinition = "TEXT") // Meglio per testi lunghi
+    private String testo; // Rinomino in "testo" per semplicità
 
-    @NotBlank (message = "Il testo della nota non può essere vuoto!")
-    private String testoNota;
-
-    @NotNull (message = "La data di creazione non può essere vuota!")
-    @FutureOrPresent (message = "La data di creazione non può essere passata")
+    @NotNull(message = "La data di creazione non può essere vuota!")
+    @PastOrPresent(message = "La data di creazione non può essere futura")
     private LocalDateTime dataCreazione;
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", nullable = false)
     private Ticket ticket;
 
-
-    public Ticket getTicket() {
-        return this.ticket;
-    }
-
-    public void setTicket(Ticket ticket) {
-        this.ticket = ticket;
-    }
-
-
+    @ManyToOne
+    @JoinColumn(name = "autore_id", nullable = false)
+    @NotNull
+    private User autore;
 
     public Integer getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getTitolo() {
-        return this.titolo;
+    public String getTesto() {
+        return testo;
     }
 
-    public void setTitolo(String titolo) {
-        this.titolo = titolo;
-    }
-
-    public String getTestoNota() {
-        return this.testoNota;
-    }
-
-    public void setTestoNota(String testoNota) {
-        this.testoNota = testoNota;
+    public void setTesto(String testo) {
+        this.testo = testo;
     }
 
     public LocalDateTime getDataCreazione() {
-        return this.dataCreazione;
+        return dataCreazione;
     }
 
     public void setDataCreazione(LocalDateTime dataCreazione) {
         this.dataCreazione = dataCreazione;
     }
 
+    public Ticket getTicket() {
+        return ticket;
+    }
 
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
 
+    public User getAutore() {
+        return autore;
+    }
+
+    public void setAutore(User autore) {
+        this.autore = autore;
+    }
 }

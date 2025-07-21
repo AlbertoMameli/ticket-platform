@@ -26,39 +26,83 @@ public class Ticket {
     @NotBlank(message = "Il titolo del ticket non può essere vuoto!")
     private String titolo;
 
-    @NotBlank(message = "Il nome del prodotto non può essere vuoto!")
+    @NotBlank(message = "La descrizione/nome prodotto non può essere vuota!")
     private String nomeProdotto;
 
     @NotNull(message = "Inserisci la data di creazione!")
     @PastOrPresent(message = "La data di creazione non può essere nel futuro")
     private LocalDateTime dataCreazione;
 
+    @NotBlank(message = "Inserire uno stato tra quelli a disposizione.")
+    private String stato;
+
     @OneToMany(mappedBy = "ticket")
     private List<Nota> note;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    @NotNull(message = "Inserisci un operatore")
-    private User user;
+    @JoinColumn(name = "operatore_id", nullable = false)
+    @NotNull(message = "Il ticket deve essere assegnato a un operatore")
+    private User operatore;
 
     @ManyToOne
-    @JoinColumn(name = "stati_id", nullable = false)
-    private StatoTicket stati;
+    @JoinColumn(name = "categoria_id", nullable = false)
+    @NotNull(message = "Il ticket deve avere una categoria")
+    private Categoria categoria;
 
-    public User getUser() {
-        return this.user;
+    public Integer getId() {
+        return id;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTitolo() {
+        return titolo;
+    }
+
+    public void setTitolo(String titolo) {
+        this.titolo = titolo;
+    }
+
+    public LocalDateTime getDataCreazione() {
+        return dataCreazione;
+    }
+
+    public void setDataCreazione(LocalDateTime dataCreazione) {
+        this.dataCreazione = dataCreazione;
+    }
+
+    public String getStato() {
+        return stato;
+    }
+
+    public void setStato(String stato) {
+        this.stato = stato;
     }
 
     public List<Nota> getNote() {
-        return this.note;
+        return note;
     }
 
     public void setNote(List<Nota> note) {
         this.note = note;
+    }
+
+    public User getOperatore() {
+        return operatore;
+    }
+
+    public void setOperatore(User operatore) {
+        this.operatore = operatore;
+    }
+
+    public Categoria getCategoria() {
+        return this.categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
     public String getNomeProdotto() {
@@ -67,38 +111,6 @@ public class Ticket {
 
     public void setNomeProdotto(String nomeProdotto) {
         this.nomeProdotto = nomeProdotto;
-    }
-
-    public Integer getId() {
-        return this.id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitolo() {
-        return this.titolo;
-    }
-
-    public void setTitolo(String titolo) {
-        this.titolo = titolo;
-    }
-
-    public LocalDateTime getDataCreazione() {
-        return this.dataCreazione;
-    }
-
-    public void setDataCreazione(LocalDateTime dataCreazione) {
-        this.dataCreazione = dataCreazione;
-    }
-
-    public StatoTicket getStati() {
-        return this.stati;
-    }
-
-    public void setStati(StatoTicket stati) {
-        this.stati = stati;
     }
 
 }

@@ -1,96 +1,85 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="it">
 
-<head th:replace="~{fragments/head :: head('Home')}">
+<head th:replace="~{fragments/layout :: head('Dettaglio Ticket')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-    <main class="container">
-        <h1 class="text-center">Dettagli ticket</h1>
+    <main class="container my-5">
 
-        <table class="table table-info table-striped">
-            <thead>
-                <tr>
-                    <th>id</th>
-                    <th>Titolo ticket</th>
-                    <th>Prodotto di riferimento</th>
-                    <th>Data Creazione</th>
-                    <th>Stato</th>
-                    <th>Operatore</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:object="${ticket}">
-                    <td>[[*{id}]]</td>
-                    <td>[[*{titolo}]]</td>
-                    <td>[[*{nomeProdotto}]]</td>
-                    <td>[[*{dataCreazione}]]</td>
-                    <td>[[*{stato}]]</td>
-                    <td>[[*{user.nome}]]</td>
-                    <td>
-                        <a th:href="@{|/tickets/*{id}/nota|}" class="btn btn-primary">Aggiungi nota</a>
-                        <a th:href="@{|/tickets/*{id}/editStato|}" class="btn btn-warning">Aggiorna stato</a>
-                    </td>
-                </tr>
-            </tbody>
-
-        </table>
+        <div class="card mb-5" th:object="${ticket}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Dettaglio Ticket n. <span th:text="*{id}"></span></h3>
+                <a th:href="@{/tickets}" class="btn btn-secondary">Torna all'Elenco</a>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title" th:text="*{titolo}"></h4>
+                <p class="card-text"><strong>Descrizione/Prodotto:</strong> <span th:text="*{nomeProdotto}"></span></p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Operatore Assegnato:</strong> <span
+                            th:text="*{operatore.nome}"></span></li>
+                    <li class="list-group-item"><strong>Categoria:</strong> <span th:text="*{categoria.nome}"></span>
+                    </li>
+                    <li class="list-group-item"><strong>Data Creazione:</strong> <span
+                            th:text="${#temporals.format(ticket.dataCreazione, 'dd MMMM yyyy HH:mm')}"></span></li>
+                    <li class="list-group-item">
+                        <strong>Stato:</strong>
+                        <span th:text="*{stato}"
+                            th:classappend="*{stato == 'COMPLETATO'} ? 'badge bg-success' : (*{stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer text-end" sec:authorize="hasAuthority('ADMIN')">
+                <a th:href="@{|/tickets/*{id}/edit|}" class="btn btn-warning">Modifica Ticket</a>
+            </div>
+        </div>
 
         <h3>Note</h3>
-        <div class="row">
-            <div class="col-4 mb-3" th:object="${nota}" th:each="nota : ${ticket.note}">
-                <div class="card">
+        <hr>
+
+        <div class="card mb-4 bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Aggiungi una Nuova Nota</h5>
+                <div th:if="${noteConErrori}" class="alert alert-danger">
+                    La nota non può essere vuota.
+                </div>
+                <form th:action="@{|/tickets/${ticket.id}/note|}" method="post" th:object="${nota}">
+                    <div class="mb-3">
+                        <label for="testo" class="form-label">Testo della nota</label>
+                        <textarea class="form-control" id="testo" name="testo" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Aggiungi Nota</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${ticket.note.isEmpty()}" class="alert alert-info">
+            Non ci sono ancora note per questo ticket.
+        </div>
+        <div class="row" th:unless="${ticket.note.isEmpty()}">
+            <div class="col-md-6 col-lg-4 mb-3" th:each="nota : ${ticket.note}">
+                <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">[[*{titolo}]]</h5>
-                        <h6 class="card-subtitle mb-2 text-body-secondary">[[*{dataCreazione}]]</h6>
-                        <p class="card-text">[[*{testoNota}]]</p>
-                        <a th:href="@{|/note/*{id}/edit|}" class="btn btn-success">Modifica</a>
-                        <button class="btn btn-warning" type="button" data-bs-toggle="modal"
-                            th:data-bs-target="'#delete-modal-'+ *{id}">
-                            Elimina
-                        </button>
-                        <!-- Modale eliminazione nota -->
-                        <div class="modal fade" th:id="'delete-modal-' + *{id}" data-bs-backdrop="static"
-                            data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Elimnare la nota del
-                                            titolo<strong>"[[*{titolo}]]"</strong>
-
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>
-                                            Sei sicuro di voler eliminare la nota
-                                            <strong>"[[*{titolo}]]"</strong>?
-                                        </p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Chiudi</button>
-                                        <form th:action="@{|/note/*{id}/delete|}" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-danger btn">Elimina</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <p class="card-text" th:text="${nota.testo}"></p>
+                    </div>
+                    <div class="card-footer text-muted d-flex justify-content-between align-items-center">
+                        <div>
+                            <small><strong>Autore:</strong> <span th:text="${nota.autore.nome}"></span></small><br>
+                            <small th:text="${#temporals.format(nota.dataCreazione, 'dd/MM/yy HH:mm')}"></small>
                         </div>
-
+                        <div sec:authorize="hasAuthority('ADMIN')">
+                            <a th:href="@{|/note/${nota.id}/edit|}" class="btn btn-sm btn-outline-secondary">Mod.</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-
-
-
     </main>
 
-    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <th:block th:replace="~{fragments/layout :: script}"></th:block>
 </body>
 
 </html>

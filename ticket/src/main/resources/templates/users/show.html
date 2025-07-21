@@ -1,43 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="it">
 
-<head th:replace="~{fragments/head :: head('Home')}">
+<head th:replace="~{fragments/layout :: head('Il Mio Profilo')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-    <main class="container">
-        <h1 class="text-center">Dettagli Utente</h1>
+    <main class="container my-5" th:object="${utente}">
 
-        <table class="table table-info table-striped">
-            <thead>
-                <tr>
-                    <th>id</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Stato personale</th>
-                    <th></th>
-                    
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:object="${utente}">
-                    <td>[[*{id}]]</td>
-                    <td>[[*{nome}]]</td>
-                    <td>[[*{email}]]</td>
-                    <td>[[*{statoPersonale}]]</td>
-                    <td>
-                        <a th:href="@{/user/edit}"  class="btn btn-warning">Modifica stato</a>
-                    </td>
-                </tr>
-            </tbody>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Dati del Profilo</h3>
+                <a th:href="@{/user/edit}" class="btn btn-warning">Modifica Profilo</a>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>ID:</strong> <span th:text="*{id}"></span></li>
+                    <li class="list-group-item"><strong>Nome:</strong> <span th:text="*{nome}"></span></li>
+                    <li class="list-group-item"><strong>Email:</strong> <span th:text="*{email}"></span></li>
+                    <li class="list-group-item">
+                        <strong>Stato:</strong>
+                        <span th:if="*{disponibile}" class="badge bg-success">Disponibile</span>
+                        <span th:unless="*{disponibile}" class="badge bg-danger">Non Disponibile</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
-        </table>
-
-
+        <div class="mt-5">
+            <h3>Ticket Assegnati</h3>
+            <hr>
+            <div th:if="*{tickets.isEmpty()}" class="alert alert-info">
+                Nessun ticket attualmente assegnato.
+            </div>
+            <table th:unless="*{tickets.isEmpty()}" class="table table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Titolo</th>
+                        <th>Data Creazione</th>
+                        <th>Stato</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ticket : *{tickets}">
+                        <td th:text="${ticket.id}"></td>
+                        <td th:text="${ticket.titolo}"></td>
+                        <td th:text="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span th:text="${ticket.stato}"
+                                th:classappend="${ticket.stato == 'COMPLETATO'} ? 'badge bg-success' : (${ticket.stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{/tickets/{id}(id=${ticket.id})}" class="btn btn-sm btn-info">Vedi Dettagli</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </main>
 
-    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <th:block th:replace="~{fragments/layout :: script}"></th:block>
 </body>
 
 </html>

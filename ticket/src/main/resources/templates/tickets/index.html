@@ -1,79 +1,84 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="it">
 
-<head th:replace="~{fragments/head :: head('Home')}">
+<head th:replace="~{fragments/layout :: head('Elenco Ticket')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:insert="~{fragments/navbar ::navbar}"></nav>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-    <main class="container">
-        <h1 class="text-center">Indice dei ticket</h1>
-        <a href="tickets/create" class="btn btn-primary mb-3">Crea Ticket</a>
+    <main class="container my-5">
+        <h1 class="mb-4">Elenco dei Ticket</h1>
 
-        <table class="table table-info table-striped">
-            <thead>
+        <div sec:authorize="hasAuthority('ADMIN')" class="mb-3">
+            <a th:href="@{/tickets/create}" class="btn btn-primary">Crea Nuovo Ticket</a>
+        </div>
+
+        <div th:if="${tickets.isEmpty()}" class="alert alert-info mt-4">
+            Nessun ticket trovato.
+        </div>
+
+        <table th:unless="${tickets.isEmpty()}" class="table table-striped align-middle">
+            <thead class="table-dark">
                 <tr>
-                    <th>id</th>
-                    <th>Titolo ticket</th>
-                    <th>Prodotto di riferimento</th>
+                    <th>ID</th>
+                    <th>Titolo</th>
+                    <th>Operatore Assegnato</th>
                     <th>Data Creazione</th>
                     <th>Stato</th>
-                    <th></th>
+                    <th>Azioni</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="ticket : ${tickets}" th:object="${ticket}">
-                    <td>[[*{id}]]</td>
-                    <td>[[*{titolo}]]</td>
-                    <td>[[*{nomeProdotto}]]</td>
-                    <td>[[*{dataCreazione}]]</td>
-                    <td>[[*{stato}]]</td>
+                    <td th:text="*{id}"></td>
+                    <td th:text="*{titolo}"></td>
+                    <td th:text="*{operatore.nome}"></td>
+                    <td th:text="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        <a th:href="@{tickets/{id}(id=*{id})}" class="btn btn-primary">Mostra</a>
-                        <a th:href="@{tickets/{id}/edit(id=*{id})}" class="btn btn-warning">Modifica</a>
-                        <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
-                            th:data-bs-target="'#delete-modal-'+ *{id}">
-                            Elimina
-                        </button>
+                        <span th:text="*{stato}"
+                            th:classappend="*{stato == 'COMPLETATO'} ? 'badge bg-success' : (*{stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/tickets/{id}(id=*{id})}" class="btn btn-sm btn-info">Dettagli</a>
 
-                        <!-- Modale eliminazione ticket -->
-                        <div class="modal fade" th:id="'delete-modal-' + *{id}" data-bs-backdrop="static"
-                            data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <th:block sec:authorize="hasAuthority('ADMIN')">
+                            <a th:href="@{/tickets/{id}/edit(id=*{id})}" class="btn btn-sm btn-warning">Modifica</a>
+                            <button class="btn btn-sm btn-danger" type="button" data-bs-toggle="modal"
+                                th:data-bs-target="'#delete-modal-' + *{id}">
+                                Elimina
+                            </button>
+                        </th:block>
+
+                        <div class="modal fade" th:id="'delete-modal-' + *{id}" tabindex="-1">
+                            <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Elimnare il ticket:
-                                            <strong>"[[*{titolo}]]"</strong>
-
+                                        <h5 class="modal-title">Conferma Eliminazione</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>
-                                            Sei sicuro di voler eliminare il ticket
-                                            <strong>"[[*{titolo}]]"</strong> con id: <strong>"[[*{id}]]"</strong>?
-                                        </p>
+                                        Sei sicuro di voler eliminare il ticket "[[*{titolo}]]"?
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Chiudi</button>
-                                        <form th:action="@{|/tickets/*{id}/delete|}" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-danger btn">Elimina</button>
+                                            data-bs-dismiss="modal">Annulla</button>
+                                        <form th:action="@{|/tickets/*{id}/delete|}" method="post">
+                                            <button type="submit" class="btn btn-danger">Elimina
+                                                Definitivamente</button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </td>
                 </tr>
             </tbody>
-
         </table>
-
-
     </main>
 
-    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <th:block th:replace="~{fragments/layout :: script}"></th:block>
 </body>
 
 </html>

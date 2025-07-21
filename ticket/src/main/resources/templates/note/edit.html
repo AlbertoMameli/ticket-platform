@@ -1,58 +1,36 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/head :: head('Crea nota')}">
+<head th:replace="~{fragments/layout :: head('Modifica Nota')}"></head>
 
-<body>
+<body class="bg-secondary-subtle">
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-    <nav th:insert="~{fragments/navbar :: navbar}"></nav>
-    <main class="container">
-
-        <h1>Crea una nuova nota</h1>
-        <form th:action="@{/note}" method="POST" th:object="${nota}">
-            <input type="hidden" th:field="*{id}">
-            <div class="mb-3">
-                <label for="titolo">Titolo</label>
-                <input type="text" id="titolo" class="form-control" th:field="*{titolo}" th:errorClass="is-invalid">
-
-                <div th:if="${#fields.hasErrors('titolo')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('titolo')}" th:text="${error}"></li>
-                    </ul>
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Modifica Nota</h3>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{|/note/${nota.id}|}" method="post" th:object="${nota}">
+                            <div class="mb-3">
+                                <label for="testo" class="form-label">Testo della nota</label>
+                                <textarea class="form-control" id="testo" th:field="*{testo}" rows="5"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Salva Modifiche</button>
+                            <a class="btn btn-secondary" th:href="@{|/tickets/${nota.ticket.id}|}">Annulla</a>
+                        </form>
+                    </div>
                 </div>
             </div>
-
-
-            <div class="mb-3">
-                <label for="testo_nota">Testo nota:</label>
-                <textarea id="test_nota" class="form-control" th:field="*{testoNota}" th:errorClass="is-invalid">
-                </textarea>
-
-                <div th:if="${#fields.hasErrors('testoNota')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('testoNota')}" th:text="${error}"></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="data_creazione">Data creazione</label>
-                <input type="datetime-local" id="data_creazione" class="form-control" th:field="*{dataCreazione}"
-                    th:errorClass="is-invalid">
-
-                <div th:if="${#fields.hasErrors('dataCreazione')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('dataCreazione')}" th:text="${error}"></li>
-                    </ul>
-                </div>
-            </div>
-            <input type="hidden" th:field="*{ticket}">
-
-
-            <div class="mb-3">
-                <button class="btn btn-primary" type="submit">Modifica</button>
-            </div>
-        </form>
-
-
+        </div>
     </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+</body>
+
+</html>

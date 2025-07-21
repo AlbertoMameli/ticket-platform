@@ -1,91 +1,60 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/head :: head('Crea ticket')}">
+<head th:replace="~{fragments/layout :: head('Crea Nuovo Ticket')}"></head>
 
-<body>
-         
-        <nav th:insert="~{fragments/navbar :: navbar}"></nav>
-    <main class="container">
-   
-        <h1>Crea un nuovo ticket</h1>
-        <form th:action="@{/tickets}" method="POST" th:object="${ticket}">
+<body class="bg-secondary-subtle">
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container my-5">
+        <h1>Crea un Nuovo Ticket</h1>
+        <hr>
+
+        <form th:action="@{/tickets}" method="POST" th:object="${ticket}" class="mt-4">
+
+            <input type="hidden" th:field="*{dataCreazione}">
+
             <div class="mb-3">
-                <label for="titolo">Titolo</label>
+                <label for="titolo" class="form-label">Titolo</label>
                 <input type="text" id="titolo" class="form-control" th:field="*{titolo}" th:errorClass="is-invalid">
-
-                <div th:if="${#fields.hasErrors('titolo')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('titolo')}" th:text="${error}"></li>
-                    </ul>
-                </div>
+                <div th:if="${#fields.hasErrors('titolo')}" class="invalid-feedback" th:errors="*{titolo}"></div>
             </div>
 
-
             <div class="mb-3">
-                <label for="nome_prodotto">Nome Prodotto</label>
-                <input type="text" id="nome_prodotto" class="form-control" th:field="*{nomeProdotto}"
-                    th:errorClass="is-invalid">
-
-                <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('nomeProdotto')}" th:text="${error}"></li>
-                    </ul>
+                <label for="nomeProdotto" class="form-label">Descrizione / Nome Prodotto</label>
+                <textarea id="nomeProdotto" class="form-control" th:field="*{nomeProdotto}" rows="3"
+                    th:errorClass="is-invalid"></textarea>
+                <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback" th:errors="*{nomeProdotto}">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="data_creazione">Data creazione</label>
-                <input type="datetime-local" id="data_creazione" class="form-control" th:value="*{dataCreazione}" th:field="*{dataCreazione}"
-                    th:errorClass="is-invalid">
-
-                <div th:if="${#fields.hasErrors('dataCreazione')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('dataCreazione')}" th:text="${error}"></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="operatore">Operatore</label>
-                <select id="operatore" class="form-select" th:field="*{user.id}" th:errorClass="is-invalid">
-                    <option th:each="user : ${users}" th:value="${user.id}">[[${user.nome}]]</option>
+                <label for="categoria" class="form-label">Categoria</label>
+                <select id="categoria" class="form-select" th:field="*{categoria}" th:errorClass="is-invalid">
+                    <option value="">Seleziona una categoria</option>
+                    <option th:each="cat : ${categorie}" th:value="${cat.id}" th:text="${cat.nome}"></option>
                 </select>
-
-                <div th:if="${#fields.hasErrors('user.id')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('user.id')}" th:text="${error}"></li>
-                    </ul>
-                </div>
+                <div th:if="${#fields.hasErrors('categoria')}" class="invalid-feedback" th:errors="*{categoria}"></div>
             </div>
 
             <div class="mb-3">
-                <label for="stato">Stato</label>
-                <select type="text" id="stato" class="form-select" th:field="*{stato}"
-                    th:errorClass="is-invalid">
-                    <option value="Da fare">Da fare</option>
-                    <option value="In corso">In Corso</option>
-                    <option value="Completato">Completato</option>
+                <label for="operatore" class="form-label">Assegna a Operatore</label>
+                <select id="operatore" class="form-select" th:field="*{operatore}" th:errorClass="is-invalid">
+                    <option value="">Seleziona un operatore</option>
+                    <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.nome}"></option>
                 </select>
-
-                <div th:if="${#fields.hasErrors('stato')}" class="invalid-feedback">
-                    <ul>
-                        <li th:each="error : ${#fields.errors('stato')}" th:text="${error}"></li>
-                    </ul>
-                </div>
+                <div th:if="${#fields.hasErrors('operatore')}" class="invalid-feedback" th:errors="*{operatore}"></div>
             </div>
-            <div class="mb-3">
-                <button class="btn btn-primary" type="submit">Crea</button>
+
+            <div class="mt-4">
+                <button class="btn btn-primary" type="submit">Crea Ticket</button>
+                <a class="btn btn-secondary" th:href="@{/tickets}">Annulla</a>
             </div>
         </form>
-
-
     </main>
 
-
-
-
-    <th:block th:insert="~{fragments/footer :: script}"></th:block>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <th:block th:replace="~{fragments/layout :: script}"></th:block>
 </body>
 
 </html>
