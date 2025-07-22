@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/layout :: head('Modifica Profilo')}"></head>
+<head th:replace="~{fragments/head :: head('Modifica Profilo')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
         <div class="row justify-content-center">
@@ -53,8 +53,8 @@
         </div>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>

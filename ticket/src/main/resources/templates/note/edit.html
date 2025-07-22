@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/layout :: head('Modifica Nota')}"></head>
+<head th:replace="~{fragments/head :: head('Modifica Nota')}"></head>
 
 <body class="bg-secondary-subtle">
     <nav th:replace="~{fragments/layout :: navbar}"></nav>
@@ -29,8 +29,8 @@
         </div>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>

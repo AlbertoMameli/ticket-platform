@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/layout :: head('Modifica Ticket')}"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
         <h1>Modifica Ticket n. <span th:text="${ticket.id}"></span></h1>
@@ -20,14 +20,15 @@
 
             <div class="mb-3">
                 <label for="nomeProdotto" class="form-label">Descrizione / Nome Prodotto</label>
-                <textarea id="nomeProdotto" class="form-control" th:field="*{nomeProdotto}" rows="3" th:errorClass="is-invalid"></textarea>
-                <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback" th:errors="*{nomeProdotto}"></div>
+                <textarea id="nomeProdotto" class="form-control" th:field="*{nomeProdotto}" rows="3"
+                    th:errorClass="is-invalid"></textarea>
+                <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback" th:errors="*{nomeProdotto}">
+                </div>
             </div>
-            
+
             <div class="mb-3">
                 <label for="dataCreazione" class="form-label">Data Creazione</label>
-                <input type="text" id="dataCreazione" class="form-control" 
-                       th:value="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}" disabled readonly>
+                <input type="text" id="dataCreazione" class="form-control" th:value="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}" disabled readonly>
             </div>
 
             <div class="mb-3">
@@ -47,7 +48,7 @@
                 </select>
                 <div th:if="${#fields.hasErrors('operatore')}" class="invalid-feedback" th:errors="*{operatore}"></div>
             </div>
-            
+
             <div class="mb-3">
                 <label for="stato" class="form-label">Stato</label>
                 <select id="stato" class="form-select" th:field="*{stato}" th:errorClass="is-invalid">
@@ -65,8 +66,8 @@
         </form>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/layout :: head('Crea Nuovo Ticket')}"></head>
+<head th:replace="~{fragments/head :: head('Crea Nuovo Ticket')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
         <h1>Crea un Nuovo Ticket</h1>
@@ -21,7 +21,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="nomeProdotto" class="form-label">Descrizione / Nome Prodotto</label>
+                <label for="nomeProdotto" class="form-label">Descrizione</label>
                 <textarea id="nomeProdotto" class="form-control" th:field="*{nomeProdotto}" rows="3"
                     th:errorClass="is-invalid"></textarea>
                 <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback" th:errors="*{nomeProdotto}">
@@ -53,8 +53,8 @@
         </form>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>

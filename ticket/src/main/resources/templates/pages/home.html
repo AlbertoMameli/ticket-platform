@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head th:replace="~{fragments/layout :: head('Help Desk - Home')}"></head>
+<head th:replace="~{fragments/head:: head('Help Desk - Home')}"></head>
 
 <body class="bg-secondary-subtle">
-    <header th:replace="~{fragments/layout :: navbar}"></header>
+    <header th:replace="~{fragments/navbar :: navbar}"></header>
 
     <main class="container mt-5">
 
@@ -53,9 +53,9 @@
 
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
 
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 
 </body>
 

@@ -100,6 +100,7 @@ public class TicketController {
     public String store(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("users", getOperatoriDisponibili());
+            model.addAttribute("categorie", categoriaRepository.findAll()); 
             return "tickets/create";
         }
         ticketRepository.save(formTicket);

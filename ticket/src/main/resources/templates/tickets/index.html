@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="it">
 
-<head th:replace="~{fragments/layout :: head('Elenco Ticket')}"></head>
+<head th:replace="~{fragments/head :: head('Elenco Ticket')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
         <h1 class="mb-4">Elenco dei Ticket</h1>
@@ -77,8 +77,8 @@
         </table>
     </main>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
-    <th:block th:replace="~{fragments/layout :: script}"></th:block>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>
