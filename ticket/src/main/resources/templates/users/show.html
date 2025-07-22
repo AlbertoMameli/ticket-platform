@@ -59,6 +59,10 @@
                     </tr>
                 </tbody>
             </table>
+
+            <span>class="nav-item ms-2" sec:authorize="hasAuthority('ADMIN')">
+                <a class="nav-link btn btn-sm btn-success text-white" th:href="@{/tickets/create}">+ Crea Nuovo
+                    Ticket</span>
         </div>
     </main>
 

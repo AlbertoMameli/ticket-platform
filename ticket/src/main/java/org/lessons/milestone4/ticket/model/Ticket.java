@@ -27,7 +27,6 @@ public class Ticket {
     @NotBlank(message = "Il titolo del ticket non può essere vuoto!")
     private String titolo;
 
-
     @Lob
     @NotBlank(message = "La descrizione/nome prodotto non può essere vuota!")
     private String nomeProdotto;
@@ -35,9 +34,6 @@ public class Ticket {
     @NotNull(message = "Inserisci la data di creazione!")
     @PastOrPresent(message = "La data di creazione non può essere nel futuro")
     private LocalDateTime dataCreazione;
-
-    @NotBlank(message = "Inserire uno stato tra quelli a disposizione.")
-    private String stato;
 
     @OneToMany(mappedBy = "ticket")
     private List<Nota> note;
@@ -51,6 +47,11 @@ public class Ticket {
     @JoinColumn(name = "categoria_id", nullable = false)
     @NotNull(message = "Il ticket deve avere una categoria")
     private Categoria categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "stato_id", nullable = false)
+    @NotNull(message = "Lo stato non può essere nullo")
+    private Stato stato;
 
     public Integer getId() {
         return id;
@@ -74,14 +75,6 @@ public class Ticket {
 
     public void setDataCreazione(LocalDateTime dataCreazione) {
         this.dataCreazione = dataCreazione;
-    }
-
-    public String getStato() {
-        return stato;
-    }
-
-    public void setStato(String stato) {
-        this.stato = stato;
     }
 
     public List<Nota> getNote() {
@@ -115,5 +108,14 @@ public class Ticket {
     public void setNomeProdotto(String nomeProdotto) {
         this.nomeProdotto = nomeProdotto;
     }
+
+    public Stato getStato() {
+        return this.stato;
+    }
+
+    public void setStato(Stato stato) {
+        this.stato = stato;
+    }
+
 
 }
