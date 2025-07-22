@@ -6,16 +6,16 @@ import java.util.List;
 
 public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
-    List<Ticket> findByTitoloContainingIgnoreCase(String titolo);
-
     List<Ticket> findByOperatoreId(Integer operatoreId);
 
     List<Ticket> findByStato(String stato);
 
     List<Ticket> findByCategoriaId(Integer categoriaId);
 
-    
-    
     Integer countByOperatoreIdAndStatoNot(Integer operatoreId, String stato);
+
+    public List<Ticket> findByOperatoreIdAndTitoloContainingIgnoreCase(Integer operatoreId, String keyword);
+
+    public List<Ticket> findByTitoloContainingIgnoreCase(String keyword);
 
 }

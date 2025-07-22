@@ -9,6 +9,15 @@
     <main class="container my-5">
         <h1 class="mb-4">Elenco dei Ticket</h1>
 
+        <form th:action="@{/tickets}" method="GET" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Cerca per titolo..."
+                    th:value="${keyword}">
+                <button class="btn btn-dark" type="submit">
+                    Cerca <i class="fas fa-search"></i> </button>
+            </div>
+        </form>
+
         <div sec:authorize="hasAuthority('ADMIN')" class="mb-3">
             <a th:href="@{/tickets/create}" class="btn btn-primary">Crea Nuovo Ticket</a>
         </div>

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.lessons.milestone4.ticket.model.Nota;
+import org.lessons.milestone4.ticket.model.Role;
 import org.lessons.milestone4.ticket.model.Ticket;
 import org.lessons.milestone4.ticket.model.User;
 import org.lessons.milestone4.ticket.repository.CategoriaRepository;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.validation.Valid;
 
@@ -41,43 +43,93 @@ public class TicketController {
     @Autowired
     CategoriaRepository categoriaRepository;
 
+    // Metodo che ritorna una lista di utenti a cui è possibile assegnare un ticket.
+
+    private List<User> getUtentiAssegnabiliDisponibili() {
+        List<User> utentiDisponibili = new ArrayList<>();
+        List<User> tuttiGliUtenti = userRepository.findAll();
+
+        // Ciclo esterno: itera su ogni utente del database
+        for (User utente : tuttiGliUtenti) {
+
+            // Controlliamo i ruoli dell'utente con un ciclo 'for' annidato
+            boolean haRuoloAssegnabile = false;
+            for (Role ruolo : utente.getRoles()) {
+                if (ruolo.getNome().equals("OPERATORE") || ruolo.getNome().equals("ADMIN")) {
+                    haRuoloAssegnabile = true;
+                    break;
+                }
+            }
+
+            // Se l'utente ha il ruolo giusto ED è anche disponibile, lo aggiungiamo
+            if (haRuoloAssegnabile && utente.isDisponibile()) {
+                utentiDisponibili.add(utente);
+            }
+        }
+        return utentiDisponibili;
+    }
+
+    /**
+     * Metodo che popola il Model con dati comuni a più form (create, edit, etc.).
+     * Viene eseguito prima di ogni richiesta a questo controller, riducendo il
+     * codice duplicato.
+     */
+    @ModelAttribute
+    public void addCommonAttributes(Model model) {
+        model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+        model.addAttribute("categorie", categoriaRepository.findAll());
+    }
+
     @GetMapping
-    public String index(Model model, Authentication authentication) {
+    public String index(
+            Model model,
+            Authentication authentication,
+            @RequestParam(name = "q", required = false) String keyword) {
         Optional<User> userOptional = userRepository.findByEmail(authentication.getName());
         if (userOptional.isEmpty()) {
-            // Gestisci il caso in cui l'utente non viene trovato, magari con un errore
             return "redirect:/logout";
         }
         User utenteLoggato = userOptional.get();
 
-        // Controlla se l'utente ha il ruolo di ADMIN
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ADMIN"));
 
         List<Ticket> tickets;
-        if (isAdmin) {
-            // Se è ADMIN, prende tutti i ticket
-            tickets = ticketRepository.findAll();
+
+        // Se l'utente ha inserito una parola chiave per la ricerca...
+        if (keyword != null && !keyword.isEmpty()) {
+            if (isAdmin) {
+                // L'admin cerca su tutti i ticket
+                tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
+            } else {
+                // L'operatore cerca solo tra i propri ticket
+                tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
+                        keyword);
+            }
         } else {
-            // Se è OPERATORE, usa il metodo efficiente per trovare solo i suoi ticket
-            tickets = ticketRepository.findByOperatoreId(utenteLoggato.getId());
+            // Altrimenti (nessuna ricerca), carica la lista normale
+            if (isAdmin) {
+                tickets = ticketRepository.findAll();
+            } else {
+                tickets = ticketRepository.findByOperatoreId(utenteLoggato.getId());
+            }
         }
 
         model.addAttribute("tickets", tickets);
+        // Passiamo la keyword alla view per riempire il campo di ricerca
+        model.addAttribute("keyword", keyword);
+
         return "tickets/index";
     }
 
     @GetMapping("/{id}")
     public String show(Model model, @PathVariable Integer id) {
-        // Trova il ticket, gestendo il caso in cui non esista
         Optional<Ticket> ticketOptional = ticketRepository.findById(id);
         if (ticketOptional.isEmpty()) {
-            // Se il ticket non esiste mostra pagina errore da creare dopo
             return "error/404";
         }
 
         model.addAttribute("ticket", ticketOptional.get());
-        // Carica solo le note di QUESTO ticket
         model.addAttribute("note", notaRepository.findByTicketId(id));
         return "tickets/show";
     }
@@ -86,42 +138,33 @@ public class TicketController {
     public String create(Model model) {
         Ticket ticket = new Ticket();
         ticket.setDataCreazione(LocalDateTime.now());
-
         model.addAttribute("ticket", ticket);
-        // Chiama il nostro nuovo metodo!
-        model.addAttribute("users", getOperatoriDisponibili());
-        model.addAttribute("categorie", categoriaRepository.findAll());
-        // Aggiungi anche categorie e stati se ti servono nel form
-        // model.addAttribute("categorie", categoriaRepository.findAll());
         return "tickets/create";
     }
 
     @PostMapping
-    public String store(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult, Model model) {
+    public String store(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("users", getOperatoriDisponibili());
-            model.addAttribute("categorie", categoriaRepository.findAll()); 
+            // Non serve ripopolare il model, lo fa già addCommonAttributes
             return "tickets/create";
         }
+        // creoil mio ticket con il valore di defoult da fare
+        formTicket.setStato("Da fare");
         ticketRepository.save(formTicket);
         return "redirect:/tickets";
     }
 
     @GetMapping("/{id}/edit")
     public String edit(Model model, @PathVariable Integer id) {
-        model.addAttribute("ticket", ticketRepository.findById(id).get());
-        // Chiama lo stesso metodo! Niente più codice duplicato.
-        model.addAttribute("users", getOperatoriDisponibili());
-        model.addAttribute("categorie", categoriaRepository.findAll());
+        model.addAttribute("ticket", ticketRepository.findById(id).orElseThrow());
+        // Le liste 'users' e 'categorie' sono già aggiunte da addCommonAttributes
         return "tickets/edit";
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable Integer id, @Valid @ModelAttribute("ticket") Ticket formTicket,
-            BindingResult bindingResult, Model model) {
+    public String update(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-
-            model.addAttribute("users", getOperatoriDisponibili());
+            // Non serve ripopolare il model, lo fa già addCommonAttributes
             return "tickets/edit";
         }
         ticketRepository.save(formTicket);
@@ -130,19 +173,15 @@ public class TicketController {
 
     @GetMapping("/{id}/editStato")
     public String editStato(Model model, @PathVariable Integer id) {
-        model.addAttribute("ticket", ticketRepository.findById(id).get());
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("ticket", ticketRepository.findById(id).orElseThrow());
         return "tickets/editStato";
     }
 
     @PostMapping("/{id}/editStato")
-    public String updateStato(@PathVariable Integer id, @Valid @ModelAttribute("ticket") Ticket formTicket,
-            BindingResult bindingResult, Model model) {
+    public String updateStato(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("users", userRepository.findAll());
-            return "tickets/edit";
+            return "tickets/editStato";
         }
-
         ticketRepository.save(formTicket);
         return "redirect:/tickets/{id}";
     }
@@ -157,33 +196,17 @@ public class TicketController {
     public String nota(@PathVariable Integer id, Model model, Authentication authentication) {
         Optional<Ticket> ticketOptional = ticketRepository.findById(id);
         if (ticketOptional.isEmpty()) {
-            return "error/404"; // O un'altra pagina di errore
+            return "error/404";
         }
         Ticket ticket = ticketOptional.get();
 
         Nota nota = new Nota();
         nota.setTicket(ticket);
 
-        Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
-        userOpt.ifPresent(nota::setAutore);
+        userRepository.findByEmail(authentication.getName()).ifPresent(nota::setAutore);
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("nota", nota);
         return "note/create";
     }
-
-    private List<User> getOperatoriDisponibili() {
-        List<User> operatoriDisponibili = new ArrayList<>();
-        List<User> tuttiGliUtenti = userRepository.findAll();
-
-        for (User utente : tuttiGliUtenti) {
-            // Usiamo il booleano 'isDisponibile'
-            boolean isOperatore = utente.getRoles().stream().anyMatch(role -> role.getNome().equals("OPERATORE"));
-            if (isOperatore && utente.isDisponibile()) {
-                operatoriDisponibili.add(utente);
-            }
-        }
-        return operatoriDisponibili;
-    }
-
 }
