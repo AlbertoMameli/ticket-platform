@@ -1,102 +1,66 @@
 package org.lessons.milestone4.ticket.controller;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.lessons.milestone4.ticket.model.Nota;
-import org.lessons.milestone4.ticket.model.Role;
-import org.lessons.milestone4.ticket.model.Stato;
-import org.lessons.milestone4.ticket.model.Ticket;
-import org.lessons.milestone4.ticket.model.User;
-import org.lessons.milestone4.ticket.repository.CategoriaRepository;
-import org.lessons.milestone4.ticket.repository.NotaRepository;
-import org.lessons.milestone4.ticket.repository.StatoRepository;
-import org.lessons.milestone4.ticket.repository.TicketRepository;
-import org.lessons.milestone4.ticket.repository.UserRepository;
+// Import necessari per la validazione, le entità, i repository e la sicurezza
+import jakarta.validation.Valid;
+import org.lessons.milestone4.ticket.model.*;
+import org.lessons.milestone4.ticket.repository.*;
+import org.lessons.milestone4.ticket.security.DatabaseUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Controller per la gestione delle operazioni sui Ticket.
+ * Gestisce la creazione, visualizzazione, modifica ed eliminazione dei ticket,
+ * con controlli di sicurezza basati sui ruoli e sulla proprietà.
+ */
 @Controller
 @RequestMapping("/tickets")
 public class TicketController {
 
+    // Iniezione delle dipendenze tramite @Autowired
     @Autowired
-    TicketRepository ticketRepository;
-
+    private TicketRepository ticketRepository;
     @Autowired
-    UserRepository userRepository;
-
+    private UserRepository userRepository;
     @Autowired
-    NotaRepository notaRepository;
-
+    private NotaRepository notaRepository;
     @Autowired
-    CategoriaRepository categoriaRepository;
-
+    private CategoriaRepository categoriaRepository;
     @Autowired
-    StatoRepository statoRepository;
+    private StatoRepository statoRepository;
 
-    private List<User> getUtentiAssegnabiliDisponibili() {
-        List<User> utentiDisponibili = new ArrayList<>();
-        List<User> tuttiGliUtenti = userRepository.findAll();
-
-        for (User utente : tuttiGliUtenti) {
-            boolean haRuoloAssegnabile = false;
-            for (Role ruolo : utente.getRoles()) {
-                if (ruolo.getNome().equals("OPERATORE") || ruolo.getNome().equals("ADMIN")) {
-                    haRuoloAssegnabile = true;
-                    break;
-                }
-            }
-
-            if (haRuoloAssegnabile && utente.isDisponibile()) {
-                utentiDisponibili.add(utente);
-            }
-        }
-        return utentiDisponibili;
-    }
-    
-    @ModelAttribute
-    public void addCommonAttributes(Model model) {
-        model.addAttribute("users", getUtentiAssegnabiliDisponibili());
-        model.addAttribute("categorie", categoriaRepository.findAll());
-        model.addAttribute("stati", statoRepository.findAll());
-    }
-
+    /**
+     * Mostra la lista dei ticket.
+     * Per gli ADMIN: tutti i ticket.
+     * Per gli OPERATORI: solo i ticket a loro assegnati.
+     * Supporta la ricerca per titolo.
+     */
     @GetMapping
-    public String index(
-            Model model,
-            Authentication authentication,
+    public String index(Model model, Authentication authentication,
             @RequestParam(name = "q", required = false) String keyword) {
-        Optional<User> userOptional = userRepository.findByEmail(authentication.getName());
-        if (userOptional.isEmpty()) {
-            return "redirect:/logout";
-        }
-        User utenteLoggato = userOptional.get();
-
+        User utenteLoggato = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ADMIN"));
-
         List<Ticket> tickets;
 
         if (keyword != null && !keyword.isEmpty()) {
             if (isAdmin) {
                 tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
             } else {
-                tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(), keyword);
+                tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
+                        keyword);
             }
         } else {
             if (isAdmin) {
@@ -108,118 +72,183 @@ public class TicketController {
 
         model.addAttribute("tickets", tickets);
         model.addAttribute("keyword", keyword);
-
         return "tickets/index";
     }
 
+    /**
+     * Mostra i dettagli di un singolo ticket.
+     */
     @GetMapping("/{id}")
-    public String show(Model model, @PathVariable Integer id) {
-        Optional<Ticket> ticketOptional = ticketRepository.findById(id);
-        if (ticketOptional.isEmpty()) {
-            return "error/404";
-        }
-
-        model.addAttribute("ticket", ticketOptional.get());
+    public String show(@PathVariable Integer id, Model model, Authentication authentication) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticket, authentication);
+        model.addAttribute("ticket", ticket);
         model.addAttribute("note", notaRepository.findByTicketId(id));
+        model.addAttribute("newNota", new Nota());
         return "tickets/show";
     }
 
+    /**
+     * Mostra il form per creare un nuovo ticket.
+     */
     @GetMapping("/create")
     public String create(Model model) {
-        Ticket ticket = new Ticket();
-        ticket.setDataCreazione(LocalDateTime.now());
-        model.addAttribute("ticket", ticket);
+        model.addAttribute("ticket", new Ticket());
+        model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+        model.addAttribute("categorie", categoriaRepository.findAll());
         return "tickets/create";
     }
 
-    @PostMapping
+    /**
+     * Salva un nuovo ticket nel database.
+     */
+    @PostMapping("/create")
     public String store(
+            // Rimuoviamo @Valid da qui per prendere il controllo della validazione
             @ModelAttribute("ticket") Ticket formTicket,
             BindingResult bindingResult,
-            @RequestParam(name = "operatore", required = false) Integer operatoreId,
-            @RequestParam(name = "categoria", required = false) Integer categoriaId) {
+            @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
+            @RequestParam(name = "operatoreId", required = false) Integer operatoreId,
+            Model model) {
 
         if (formTicket.getTitolo() == null || formTicket.getTitolo().trim().isEmpty()) {
-            bindingResult.addError(new FieldError("ticket", "titolo", "Il titolo del ticket non può essere vuoto!"));
+            bindingResult.addError(new FieldError("ticket", "titolo", "Il titolo è obbligatorio"));
         }
-        if (formTicket.getNomeProdotto() == null || formTicket.getNomeProdotto().trim().isEmpty()) {
-            bindingResult.addError(new FieldError("ticket", "nomeProdotto", "La descrizione non può essere vuota!"));
-        }
-
-        if (operatoreId == null) {
-            bindingResult.addError(new FieldError("ticket", "operatore", "Il ticket deve essere assegnato a un operatore"));
+        if (formTicket.getDescrizione() == null || formTicket.getDescrizione().trim().isEmpty()) {
+            bindingResult.addError(new FieldError("ticket", "descrizione", "La descrizione è obbligatoria"));
         }
         if (categoriaId == null) {
-            bindingResult.addError(new FieldError("ticket", "categoria", "Il ticket deve avere una categoria"));
+            bindingResult.addError(new FieldError("ticket", "categoria", "La categoria è obbligatoria"));
+        }
+        if (operatoreId == null) {
+            bindingResult.addError(new FieldError("ticket", "operatore", "L'operatore è obbligatorio"));
         }
 
+        // Se uno qualsiasi dei controlli sopra è fallito...
         if (bindingResult.hasErrors()) {
+            // ... ricarichiamo il form, ripopolando i menu a tendina.
+            model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+            model.addAttribute("categorie", categoriaRepository.findAll());
             return "tickets/create";
         }
 
-        Stato statoIniziale = statoRepository.findByValore("Da fare")
-                .orElseThrow(() -> new IllegalStateException("Stato 'Da fare' non trovato nel database!"));
-        formTicket.setStato(statoIniziale);
-
-        formTicket.setOperatore(userRepository.findById(operatoreId).get());
-        formTicket.setCategoria(categoriaRepository.findById(categoriaId).get());
+        // Se la validazione è passata, procediamo a costruire e salvare l'oggetto
+        // completo.
+        formTicket.setCategoria(categoriaRepository.findById(categoriaId).orElseThrow());
+        formTicket.setOperatore(userRepository.findById(operatoreId).orElseThrow());
+        formTicket.setDataCreazione(LocalDateTime.now());
+        formTicket.setStato(statoRepository.findByValore("Da fare").orElseThrow());
 
         ticketRepository.save(formTicket);
 
         return "redirect:/tickets";
     }
 
+    /**
+     * Mostra il form per modificare un ticket esistente.
+     */
     @GetMapping("/{id}/edit")
-    public String edit(Model model, @PathVariable Integer id) {
-        model.addAttribute("ticket", ticketRepository.findById(id).orElseThrow());
+    public String edit(@PathVariable Integer id, Model model, Authentication authentication) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticket, authentication);
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+        model.addAttribute("categorie", categoriaRepository.findAll());
         return "tickets/edit";
     }
 
-    @PostMapping("/{id}")
-    public String update(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult) {
+    /**
+     * Aggiorna un ticket esistente nel database.
+     */
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Integer id, @Valid @ModelAttribute("ticket") Ticket formTicket,
+            BindingResult bindingResult,
+            @RequestParam("categoriaId") Integer categoriaId,
+            @RequestParam("operatoreId") Integer operatoreId, Authentication authentication) {
+        Ticket ticketToUpdate = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticketToUpdate, authentication);
         if (bindingResult.hasErrors()) {
             return "tickets/edit";
         }
-        ticketRepository.save(formTicket);
+        ticketToUpdate.setTitolo(formTicket.getTitolo());
+        ticketToUpdate.setDescrizione(formTicket.getDescrizione());
+        ticketToUpdate.setCategoria(categoriaRepository.findById(categoriaId).orElseThrow());
+        ticketToUpdate.setOperatore(userRepository.findById(operatoreId).orElseThrow());
+        ticketRepository.save(ticketToUpdate);
         return "redirect:/tickets";
     }
 
+    /**
+     * Mostra il form per modificare solo lo stato di un ticket.
+     */
     @GetMapping("/{id}/editStato")
-    public String editStato(Model model, @PathVariable Integer id) {
-        model.addAttribute("ticket", ticketRepository.findById(id).orElseThrow());
+    public String editStato(@PathVariable Integer id, Model model, Authentication authentication) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticket, authentication);
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("stati", statoRepository.findAll());
         return "tickets/editStato";
     }
 
+    /**
+     * Aggiorna solo lo stato di un ticket esistente.
+     */
     @PostMapping("/{id}/editStato")
-    public String updateStato(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "tickets/editStato";
-        }
-        ticketRepository.save(formTicket);
-        return "redirect:/tickets/" + formTicket.getId();
+    public String updateStato(@PathVariable Integer id, @RequestParam("statoId") Integer statoId,
+            Authentication authentication) {
+        Ticket ticketToUpdate = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticketToUpdate, authentication);
+        ticketToUpdate.setStato(statoRepository.findById(statoId).orElseThrow());
+        ticketRepository.save(ticketToUpdate);
+        return "redirect:/tickets/" + ticketToUpdate.getId();
     }
 
+    /**
+     * Elimina un ticket dal database.
+     */
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Integer id) {
-        ticketRepository.deleteById(id);
+    public String delete(@PathVariable Integer id, Authentication authentication) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        checkUserOwnershipOrAdmin(ticket, authentication);
+        ticketRepository.delete(ticket);
         return "redirect:/tickets";
     }
 
-    @GetMapping("/{id}/nota")
-    public String nota(@PathVariable Integer id, Model model, Authentication authentication) {
-        Optional<Ticket> ticketOptional = ticketRepository.findById(id);
-        if (ticketOptional.isEmpty()) {
-            return "error/404";
+    // METODI PRIVATI DI SUPPORTO //
+
+    /**
+     * Metodo di sicurezza per verificare che l'utente loggato sia ADMIN o il
+     * proprietario del ticket.
+     */
+    private void checkUserOwnershipOrAdmin(Ticket ticket, Authentication authentication) {
+        DatabaseUserDetails userDetails = (DatabaseUserDetails) authentication.getPrincipal();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        if (!isAdmin && !ticket.getOperatore().getId().equals(userDetails.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accesso negato");
         }
-        Ticket ticket = ticketOptional.get();
+    }
 
-        Nota nota = new Nota();
-        nota.setTicket(ticket);
-
-        userRepository.findByEmail(authentication.getName()).ifPresent(nota::setAutore);
-
-        model.addAttribute("ticket", ticket);
-        model.addAttribute("nota", nota);
-        return "note/create";
+    /**
+     * Restituisce una lista di utenti (Operatori/Admin) che sono attualmente
+     * disponibili.
+     */
+    private List<User> getUtentiAssegnabiliDisponibili() {
+        List<User> utentiDisponibili = new ArrayList<>();
+        List<User> tuttiGliUtenti = userRepository.findAll();
+        for (User utente : tuttiGliUtenti) {
+            boolean haRuoloAssegnabile = utente.getRoles().stream()
+                    .anyMatch(role -> role.getNome().equals("OPERATORE") || role.getNome().equals("ADMIN"));
+            if (haRuoloAssegnabile && utente.isDisponibile()) {
+                utentiDisponibili.add(utente);
+            }
+        }
+        return utentiDisponibili;
     }
 }

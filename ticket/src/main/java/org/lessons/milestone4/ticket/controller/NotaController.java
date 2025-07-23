@@ -48,19 +48,17 @@ public class NotaController {
             Authentication authentication,
             Model model) {
 
-        // 1. Trova il ticket a cui la nota appartiene
         Optional<Ticket> ticketOpt = ticketRepository.findById(ticketId);
         if (ticketOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato");
         }
         Ticket ticket = ticketOpt.get();
 
-        // Se ci sono errori di validazione, ricarica la pagina del ticket con gli
-        // errori
         if (bindingResult.hasErrors()) {
             model.addAttribute("ticket", ticket);
-            model.addAttribute("noteConErrori", formNota); // Usa un nome diverso per non sovrascrivere la form vuota
-            return "tickets/show"; // Torna alla pagina di dettaglio del ticket
+            // AGGIUNTA: Ripopola la lista delle note per la vista
+            model.addAttribute("note", notaRepository.findByTicketId(ticketId));
+            return "tickets/show"; // Ora la pagina ha tutti i dati di cui ha bisogno
         }
 
         // 2. Trova l'utente che sta scrivendo la nota (l'autore)

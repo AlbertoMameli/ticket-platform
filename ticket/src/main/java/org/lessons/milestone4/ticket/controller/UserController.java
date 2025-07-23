@@ -37,9 +37,8 @@ public class UserController {
         User utente = userOpt.get();
         model.addAttribute("utente", utente);
 
-        
         List<Ticket> ticketsAssegnati = ticketRepository.findByOperatoreId(utente.getId());
-        model.addAttribute("tickets", ticketsAssegnati); 
+        model.addAttribute("tickets", ticketsAssegnati);
 
         return "users/show";
     }
@@ -70,7 +69,8 @@ public class UserController {
         // Usiamo il nuovo campo booleano 'isDisponibile'
         if (!formUtente.isDisponibile()) {
 
-            Integer ticketAperti = ticketRepository.countByOperatoreIdAndStatoNot(userDaSalvare.getId(), "COMPLETATO");
+            Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(userDaSalvare.getId(),
+                    "COMPLETATO");
 
             if (ticketAperti > 0) {
                 // 4. Se ci sono ticket aperti, non salvare e manda un messaggio di errore

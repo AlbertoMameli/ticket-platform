@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="it">
 
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head :: head('Modifica Ticket')}"></head>
 
 <body class="bg-secondary-subtle">
     <nav th:replace="~{fragments/navbar :: navbar}"></nav>
@@ -10,48 +10,57 @@
         <h1>Modifica Ticket n. <span th:text="${ticket.id}"></span></h1>
         <hr>
 
-        <form th:action="@{/tickets/{id}(id=${ticket.id})}" method="POST" th:object="${ticket}" class="mt-4">
+
+        <form th:action="@{/tickets/{id}/edit(id=${ticket.id})}" method="POST" th:object="${ticket}" class="mt-4">
 
             <div class="mb-3">
-                <label for="titolo" class="form-label">Titolo</label>
+                <label for="titolo" class="form-label">Titolo Ticket</label>
                 <input type="text" id="titolo" class="form-control" th:field="*{titolo}" th:errorClass="is-invalid">
                 <div th:if="${#fields.hasErrors('titolo')}" class="invalid-feedback" th:errors="*{titolo}"></div>
             </div>
 
             <div class="mb-3">
-                <label for="nomeProdotto" class="form-label">Descrizione / Nome Prodotto</label>
-                <textarea id="nomeProdotto" class="form-control" th:field="*{nomeProdotto}" rows="3"
+                <label for="descrizione" class="form-label">Descrizione</label>
+                <textarea id="descrizione" class="form-control" th:field="*{descrizione}" rows="3"
                     th:errorClass="is-invalid"></textarea>
-                <div th:if="${#fields.hasErrors('nomeProdotto')}" class="invalid-feedback" th:errors="*{nomeProdotto}">
+                <div th:if="${#fields.hasErrors('descrizione')}" class="invalid-feedback" th:errors="*{descrizione}">
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="dataCreazione" class="form-label">Data Creazione</label>
-                <input type="text" id="dataCreazione" class="form-control" th:value="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}" disabled readonly>
+                <input type="text" id="dataCreazione" class="form-control"
+                    th:value="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}" disabled readonly>
             </div>
 
             <div class="mb-3">
                 <label for="categoria" class="form-label">Categoria</label>
-                <select id="categoria" class="form-select" th:field="*{categoria}" th:errorClass="is-invalid">
-                    <option value="">Seleziona una categoria</option>
-                    <option th:each="cat : ${categorie}" th:value="${cat.id}" th:text="${cat.nome}"></option>
+
+                <select id="categoria" class="form-select" name="categoriaId">
+
+                    <option th:each="cat : ${categorie}" th:value="${cat.id}" th:text="${cat.nome}"
+                        th:selected="${cat.id == ticket.categoria.id}">
+                    </option>
+
                 </select>
-                <div th:if="${#fields.hasErrors('categoria')}" class="invalid-feedback" th:errors="*{categoria}"></div>
             </div>
 
+            
             <div class="mb-3">
                 <label for="operatore" class="form-label">Assegna a Operatore</label>
-                <select id="operatore" class="form-select" th:field="*{operatore}" th:errorClass="is-invalid">
-                    <option value="">Seleziona un operatore</option>
-                    <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.nome}"></option>
+
+                <select id="operatore" class="form-select" name="operatoreId">
+
+                    <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.nome}"
+                        th:selected="${user.id == ticket.operatore.id}">
+                    </option>
+
                 </select>
-                <div th:if="${#fields.hasErrors('operatore')}" class="invalid-feedback" th:errors="*{operatore}"></div>
             </div>
 
             <div class="mb-3">
                 <label for="stato" class="form-label">Stato</label>
-                <select id="stato" class="form-select" th:field="*{stato}" th:errorClass="is-invalid">
+                <select id="stato" class="form-select" th:field="*{stato.valore}" th:errorClass="is-invalid">
                     <option value="DA_FARE">Da Fare</option>
                     <option value="IN_CORSO">In Corso</option>
                     <option value="COMPLETATO">Completato</option>

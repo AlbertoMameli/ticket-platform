@@ -3,6 +3,7 @@ package org.lessons.milestone4.ticket.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,14 +29,14 @@ public class Ticket {
     private String titolo;
 
     @Lob
-    @NotBlank(message = "La descrizione/nome prodotto non può essere vuota!")
-    private String nomeProdotto;
+    @NotBlank(message = "La descrizione non può essere vuota!")
+    private String descrizione;
 
     @NotNull(message = "Inserisci la data di creazione!")
     @PastOrPresent(message = "La data di creazione non può essere nel futuro")
     private LocalDateTime dataCreazione;
 
-    @OneToMany(mappedBy = "ticket")
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> note;
 
     @ManyToOne
@@ -101,12 +102,12 @@ public class Ticket {
         this.categoria = categoria;
     }
 
-    public String getNomeProdotto() {
-        return this.nomeProdotto;
+    public String getDescrizione() {
+        return this.descrizione;
     }
 
-    public void setNomeProdotto(String nomeProdotto) {
-        this.nomeProdotto = nomeProdotto;
+    public void setDescrizione(String descrizione) {
+        this.descrizione = descrizione;
     }
 
     public Stato getStato() {

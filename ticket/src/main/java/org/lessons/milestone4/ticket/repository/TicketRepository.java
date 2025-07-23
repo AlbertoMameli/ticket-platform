@@ -1,3 +1,5 @@
+// org/lessons/milestone4/ticket/repository/TicketRepository.java
+
 package org.lessons.milestone4.ticket.repository;
 
 import org.lessons.milestone4.ticket.model.Ticket;
@@ -8,14 +10,15 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     List<Ticket> findByOperatoreId(Integer operatoreId);
 
-    List<Ticket> findByStato(String stato);
+    //  Cerca tramite il campo 'valore' dell'entità Stato
+    List<Ticket> findByStato_Valore(String statoValore);
 
     List<Ticket> findByCategoriaId(Integer categoriaId);
 
-    Integer countByOperatoreIdAndStatoNot(Integer operatoreId, String stato);
+    // Conta tramite il campo 'valore' dell'entità Stato
+    Integer countByOperatoreIdAndStato_ValoreNot(Integer operatoreId, String statoValore);
 
-    public List<Ticket> findByOperatoreIdAndTitoloContainingIgnoreCase(Integer operatoreId, String keyword);
+    List<Ticket> findByOperatoreIdAndTitoloContainingIgnoreCase(Integer operatoreId, String keyword);
 
-    public List<Ticket> findByTitoloContainingIgnoreCase(String keyword);
-
+    List<Ticket> findByTitoloContainingIgnoreCase(String keyword);
 }

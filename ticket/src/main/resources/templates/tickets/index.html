@@ -44,7 +44,7 @@
                     <td th:text="*{operatore.nome}"></td>
                     <td th:text="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        <span th:text="*{stato}"
+                        <span th:text="${ticket.stato.valore}"
                             th:classappend="*{stato == 'COMPLETATO'} ? 'badge bg-success' : (*{stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
                         </span>
                     </td>
