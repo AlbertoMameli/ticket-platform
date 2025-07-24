@@ -21,11 +21,11 @@
                             <form th:action="@{/login}" method="POST">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="username" name="username" required>
+                                    <input type="email" class="form-control" id="username" name="username">
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <input type="password" class="form-control" id="password" name="password">
                                 </div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">Login</button>
@@ -39,14 +39,19 @@
 
         <div sec:authorize="isAuthenticated()">
             <div class="text-center p-5 bg-light rounded-3">
-                <h1>Bentornato in Help Desk!</h1>
+                <h1>Gestione Cantieri Marmaris.srl</h1>
+                <hr>
                 <p class="lead">
                     Ciao, <strong sec:authentication="name"></strong>. Sei pronto a gestire i ticket?
                 </p>
-                <hr>
-                <div class="mt-4">
+
+                <div class="mt-4 mb-5">
                     <a th:href="@{/tickets}" class="btn btn-primary btn-lg">Vai ai Ticket</a>
                     <a th:href="@{/user/show}" class="btn btn-secondary btn-lg">Vedi il tuo Profilo</a>
+                </div>
+                <div class="nav-item ms-2" sec:authorize="hasAuthority('ADMIN')">
+                    <span> <a class="nav-link btn btn-sm btn-success text-white" th:href="@{/tickets/create}">+ Crea
+                            Nuovo Ticket</span>
                 </div>
             </div>
         </div>

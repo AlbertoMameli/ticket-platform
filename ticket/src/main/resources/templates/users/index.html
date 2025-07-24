@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
+
+<head th:replace="~{fragments/head :: head('Gestione Utenti')}"></head>
+
+<body class="bg-secondary-subtle">
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+    <main class="container my-5">
+        <h1 class="mb-4">Elenco Utenti del Sistema</h1>
+
+        <div th:if="${userList.isEmpty()}" class="alert alert-info">
+            Nessun utente trovato.
+        </div>
+
+        <table th:unless="${userList.isEmpty()}" class="table table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Ruoli</th>
+                    <th>Stato Disponibilità</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${userList}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.nome}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td>
+                        <span th:each="role : ${user.roles}" th:text="${role.nome}" class="badge bg-info me-1"></span>
+                    </td>
+                    <td>
+                        <span th:if="${user.disponibile}" class="badge bg-success">Disponibile</span>
+                        <span th:unless="${user.disponibile}" class="badge bg-danger">Non Disponibile</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
+</body>
+
+</html>

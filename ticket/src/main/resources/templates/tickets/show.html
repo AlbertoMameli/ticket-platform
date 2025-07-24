@@ -25,12 +25,13 @@
                             th:text="${#temporals.format(ticket.dataCreazione, 'dd MMMM yyyy HH:mm')}"></span></li>
                     <li class="list-group-item">
                         <strong>Stato:</strong>
-                        <span th:text="*{stato}"
+                        <span th:text="*{stato.valore}"
                             th:classappend="*{stato == 'COMPLETATO'} ? 'badge bg-success' : (*{stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
                         </span>
                     </li>
                 </ul>
             </div>
+        
             <div class="card-footer text-end" sec:authorize="hasAuthority('ADMIN')">
                 <a th:href="@{|/tickets/*{id}/edit|}" class="btn btn-warning">Modifica Ticket</a>
             </div>
@@ -48,7 +49,7 @@
                 <form th:action="@{|/tickets/${ticket.id}/note|}" method="post" th:object="${nota}">
                     <div class="mb-3">
                         <label for="testo" class="form-label">Testo della nota</label>
-                        <textarea class="form-control" id="testo" name="testo" rows="3" required></textarea>
+                        <textarea class="form-control" id="testo" name="testo" rows="3" ></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Aggiungi Nota</button>
                 </form>

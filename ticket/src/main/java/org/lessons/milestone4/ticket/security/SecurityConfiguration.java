@@ -18,15 +18,23 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(requests -> requests
-                .requestMatchers("/tickets/create", "/tickets/*/edit").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/tickets/**", "/tickets/*/delete").hasAuthority("ADMIN")
-                .requestMatchers("/tickets", "/tickets/*").hasAnyAuthority("OPERATORE", "ADMIN")
-                .requestMatchers("/**").permitAll()
+                // REGOLE SPECIFICHE
+                .requestMatchers(HttpMethod.POST, "/tickets/*/editStato").hasAnyAuthority("ADMIN", "OPERATORE")
+                .requestMatchers(HttpMethod.POST, "/tickets/*/note").hasAnyAuthority("ADMIN","OPERATORE")
 
-        )
+                // L'ADMIN può accedere alle pagine di creazione e modifica
+                .requestMatchers("/tickets/create", "/tickets/*/edit").hasAuthority("ADMIN")
+
+                .requestMatchers(HttpMethod.POST, "/tickets/create", "/tickets/*/edit", "/tickets/*/delete")
+                .hasAuthority("ADMIN")
+
+                // REGOLE GENERALI (rimangono uguali)
+                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()
+                .requestMatchers("/**").permitAll())
                 .formLogin(Customizer.withDefaults())
-                .cors(cors -> cors.disable())// da approffondire
-                .csrf(csrf -> csrf.disable());// da approffondire
+                .logout(logout -> logout.logoutSuccessUrl("/"))
+                .cors(cors -> cors.disable())
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }

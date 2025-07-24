@@ -1,12 +1,11 @@
 package org.lessons.milestone4.ticket.controller;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.lessons.milestone4.ticket.model.Ticket;
 import org.lessons.milestone4.ticket.model.User;
 import org.lessons.milestone4.ticket.repository.TicketRepository;
 import org.lessons.milestone4.ticket.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,18 +15,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.Optional;
+
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/users") // <-- CORRETTO: Plurale
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final TicketRepository ticketRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TicketRepository ticketRepository;
 
-    public UserController(UserRepository userRepository, TicketRepository ticketRepository) {
-        this.userRepository = userRepository;
-        this.ticketRepository = ticketRepository;
+    /**
+     * Mostra la lista di tutti gli utenti. Accessibile solo all'ADMIN.
+     */
+    @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')") // Sicurezza a livello di metodo
+    public String index(Model model) {
+        model.addAttribute("userList", userRepository.findAll());
+        return "users/index";
     }
 
+    /**
+     * Mostra la pagina del profilo dell'utente loggato.
+     */
     @GetMapping("/show")
     public String show(Model model, Authentication authentication) {
         Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
@@ -36,13 +48,14 @@ public class UserController {
         }
         User utente = userOpt.get();
         model.addAttribute("utente", utente);
-
         List<Ticket> ticketsAssegnati = ticketRepository.findByOperatoreId(utente.getId());
         model.addAttribute("tickets", ticketsAssegnati);
-
         return "users/show";
     }
 
+    /**
+     * Mostra il form per modificare il proprio profilo.
+     */
     @GetMapping("/edit")
     public String edit(Model model, Authentication authentication) {
         Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
@@ -53,41 +66,29 @@ public class UserController {
         return "users/edit";
     }
 
+    /**
+     * Salva le modifiche al profilo.
+     */
     @PostMapping("/edit")
-    public String update(
-            @ModelAttribute("utente") User formUtente,
-            Authentication authentication,
+    public String update(@ModelAttribute("utente") User formUtente, Authentication authentication,
             RedirectAttributes redirectAttributes) {
+        User userDaSalvare = userRepository.findByEmail(authentication.getName()).orElseThrow();
 
-        Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
-        if (userOpt.isEmpty()) {
-            return "redirect:/logout";
-        }
-        User userDaSalvare = userOpt.get();
-
-        // 2. Se l'operatore vuole mettersi NON disponibile, fai il controllo
-        // Usiamo il nuovo campo booleano 'isDisponibile'
         if (!formUtente.isDisponibile()) {
-
             Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(userDaSalvare.getId(),
                     "COMPLETATO");
-
             if (ticketAperti > 0) {
-                // 4. Se ci sono ticket aperti, non salvare e manda un messaggio di errore
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Non puoi impostare lo stato su 'Non disponibile' perché hai " + ticketAperti
                                 + " ticket non completati.");
-                return "redirect:/user/edit";
+                return "redirect:/users/edit"; // <-- CORRETTO: Plurale
             }
         }
 
-        // 5. Se i controlli passano, aggiorna i dati dell'utente e salva
         userDaSalvare.setNome(formUtente.getNome());
         userDaSalvare.setDisponibile(formUtente.isDisponibile());
         userRepository.save(userDaSalvare);
-
-        // Manda un messaggio di successo
         redirectAttributes.addFlashAttribute("successMessage", "Profilo aggiornato con successo!");
-        return "redirect:/user/edit";
+        return "redirect:/users/edit"; // <-- CORRETTO: Plurale
     }
 }

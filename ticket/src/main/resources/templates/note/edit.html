@@ -4,7 +4,7 @@
 <head th:replace="~{fragments/head :: head('Modifica Nota')}"></head>
 
 <body class="bg-secondary-subtle">
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
         <div class="row justify-content-center">
@@ -14,14 +14,16 @@
                         <h3>Modifica Nota</h3>
                     </div>
                     <div class="card-body">
-                        <form th:action="@{|/note/${nota.id}|}" method="post" th:object="${nota}">
+                        <form th:action="@{/note/{id}(id=${nota.id})}" method="post" th:object="${nota}">
                             <div class="mb-3">
                                 <label for="testo" class="form-label">Testo della nota</label>
                                 <textarea class="form-control" id="testo" th:field="*{testo}" rows="5"
-                                    required></textarea>
+                                    th:errorclass="is-invalid"></textarea>
+                                <div th:if="${#fields.hasErrors('testo')}" class="invalid-feedback"
+                                    th:errors="*{testo}"></div>
                             </div>
                             <button type="submit" class="btn btn-primary">Salva Modifiche</button>
-                            <a class="btn btn-secondary" th:href="@{|/tickets/${nota.ticket.id}|}">Annulla</a>
+                            <a class="btn btn-secondary" th:href="@{/tickets/{id}(id=${nota.ticket.id})}">Annulla</a>
                         </form>
                     </div>
                 </div>

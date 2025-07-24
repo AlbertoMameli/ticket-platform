@@ -11,7 +11,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3>Dati del Profilo</h3>
-                <a th:href="@{/user/edit}" class="btn btn-warning">Modifica Profilo</a>
+                <a th:href="@{/users/edit}" class="btn btn-warning">Modifica Profilo</a>
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
@@ -49,8 +49,8 @@
                         <td th:text="${ticket.titolo}"></td>
                         <td th:text="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>
-                            <span th:text="${ticket.stato}"
-                                th:classappend="${ticket.stato == 'COMPLETATO'} ? 'badge bg-success' : (${ticket.stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
+                            <span th:text="${ticket.stato.valore}"
+                                th:classappend="${ticket.stato.valore == 'COMPLETATO'} ? 'badge bg-success' : (${ticket.stato.valore == 'In corso'} ? 'badge bg-warning' : 'badge bg-danger')">
                             </span>
                         </td>
                         <td>
@@ -59,15 +59,11 @@
                     </tr>
                 </tbody>
             </table>
-
-            <span>class="nav-item ms-2" sec:authorize="hasAuthority('ADMIN')">
-                <a class="nav-link btn btn-sm btn-success text-white" th:href="@{/tickets/create}">+ Crea Nuovo
-                    Ticket</span>
         </div>
     </main>
 
     <footer th:replace="~{fragments/footer :: footer}"></footer>
-    <th:block th:replace="~{fragments/script  :: script}"></th:block>
+    <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
 
 </html>

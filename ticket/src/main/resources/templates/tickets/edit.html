@@ -58,15 +58,6 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="stato" class="form-label">Stato</label>
-                <select id="stato" class="form-select" th:field="*{stato.valore}" th:errorClass="is-invalid">
-                    <option value="DA_FARE">Da Fare</option>
-                    <option value="IN_CORSO">In Corso</option>
-                    <option value="COMPLETATO">Completato</option>
-                </select>
-                <div th:if="${#fields.hasErrors('stato')}" class="invalid-feedback" th:errors="*{stato}"></div>
-            </div>
 
             <div class="mt-4">
                 <button class="btn btn-primary" type="submit">Salva Modifiche</button>

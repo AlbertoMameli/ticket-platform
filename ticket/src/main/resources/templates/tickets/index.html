@@ -5,33 +5,24 @@
 
 <body class="bg-secondary-subtle">
     <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-
     <main class="container my-5">
         <h1 class="mb-4">Elenco dei Ticket</h1>
 
         <form th:action="@{/tickets}" method="GET" class="mb-4">
-            <div class="input-group">
+            <div class="input-group col-md-6">
                 <input type="text" name="q" class="form-control" placeholder="Cerca per titolo..."
                     th:value="${keyword}">
                 <button class="btn btn-dark" type="submit">
                     Cerca <i class="fas fa-search"></i> </button>
             </div>
         </form>
-
-        <div sec:authorize="hasAuthority('ADMIN')" class="mb-3">
-            <a th:href="@{/tickets/create}" class="btn btn-primary">Crea Nuovo Ticket</a>
-        </div>
-
-        <div th:if="${tickets.isEmpty()}" class="alert alert-info mt-4">
-            Nessun ticket trovato.
-        </div>
-
         <table th:unless="${tickets.isEmpty()}" class="table table-striped align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Titolo</th>
-                    <th>Operatore Assegnato</th>
+                    <th>Operatore</th>
+                    <th>Categoria</th>
                     <th>Data Creazione</th>
                     <th>Stato</th>
                     <th>Azioni</th>
@@ -42,10 +33,21 @@
                     <td th:text="*{id}"></td>
                     <td th:text="*{titolo}"></td>
                     <td th:text="*{operatore.nome}"></td>
+                    <td th:text="*{categoria.nome}"></td>
                     <td th:text="${#temporals.format(ticket.dataCreazione, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        <span th:text="${ticket.stato.valore}"
-                            th:classappend="*{stato == 'COMPLETATO'} ? 'badge bg-success' : (*{stato == 'IN_CORSO'} ? 'badge bg-warning' : 'badge bg-danger')">
+                        <form
+                            th:if="${#authorization.expression('hasAuthority(''ADMIN'')') or #authentication.principal.id == ticket.operatore.id}"
+                            th:action="@{/tickets/{id}/editStato(id=${ticket.id})}" method="POST">
+                            <select name="statoId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option th:each="stato : ${stati}" th:value="${stato.id}" th:text="${stato.valore}"
+                                    th:selected="${stato.id == ticket.stato.id}"></option>
+                            </select>
+                        </form>
+                        <span
+                            th:unless="${#authorization.expression('hasAuthority(''ADMIN'')') or #authentication.principal.id == ticket.operatore.id}"
+                            th:text="*{stato.valore}"
+                            th:classappend="*{stato.valore == 'COMPLETATO'} ? 'badge bg-success' : (*{stato.valore == 'In corso'} ? 'badge bg-warning' : 'badge bg-danger')">
                         </span>
                     </td>
                     <td>
@@ -53,6 +55,7 @@
 
                         <th:block sec:authorize="hasAuthority('ADMIN')">
                             <a th:href="@{/tickets/{id}/edit(id=*{id})}" class="btn btn-sm btn-warning">Modifica</a>
+
                             <button class="btn btn-sm btn-danger" type="button" data-bs-toggle="modal"
                                 th:data-bs-target="'#delete-modal-' + *{id}">
                                 Elimina
@@ -84,8 +87,12 @@
                 </tr>
             </tbody>
         </table>
-    </main>
 
+        <div class="nav-item ms-2 mt-5" sec:authorize="hasAuthority('ADMIN')">
+                    <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">+ Crea
+                            Nuovo Ticket</span>
+                </div>
+    </main>
     <footer th:replace="~{fragments/footer :: footer}"></footer>
     <th:block th:replace="~{fragments/script :: script}"></th:block>
 </body>
