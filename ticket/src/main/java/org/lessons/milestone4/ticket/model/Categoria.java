@@ -2,6 +2,8 @@ package org.lessons.milestone4.ticket.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +28,7 @@ public class Categoria {
     private String nome;
 
     @OneToMany(mappedBy = "categoria")
+    @JsonBackReference
     private List<Ticket> tickets;
 
     // --- Getters e Setters ---

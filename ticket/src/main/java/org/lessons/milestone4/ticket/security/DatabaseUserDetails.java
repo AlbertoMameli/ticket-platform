@@ -15,12 +15,14 @@ public class DatabaseUserDetails implements UserDetails {
     private final Integer id;
     private final String username;
     private final String password;
+    private final String nome;
     private final Set<GrantedAuthority> authorities;
 
     public DatabaseUserDetails(User user){
         this.id = user.getId();
         this.username = user.getEmail();
         this.password = user.getPassword();
+        this.nome = user.getNome();
 
         this.authorities = new HashSet<>();
 
@@ -47,5 +49,11 @@ public class DatabaseUserDetails implements UserDetails {
     public String getUsername() {
         return this.username;
     }
+
+    public String getNome() {
+        return this.nome;
+    }
+
+
     
 }

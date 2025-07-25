@@ -1,7 +1,7 @@
 body {
     display: flex;
     flex-direction: column;
-    min-height: 100dvh; /* <-- USA QUESTO */
+    min-height: 100dvh; /* <-- uso dvh al posto di pixel o % per un approccio più moderno per i dispositivi mobili */
 }
 
 main {

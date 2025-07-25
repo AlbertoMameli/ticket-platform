@@ -3,6 +3,8 @@ package org.lessons.milestone4.ticket.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,16 +39,19 @@ public class Ticket {
     private LocalDateTime dataCreazione;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Nota> note;
 
     @ManyToOne
     @JoinColumn(name = "operatore_id", nullable = false)
     @NotNull(message = "Il ticket deve essere assegnato a un operatore")
+    @JsonManagedReference
     private User operatore;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     @NotNull(message = "Il ticket deve avere una categoria")
+    @JsonManagedReference
     private Categoria categoria;
 
     @ManyToOne
@@ -117,6 +122,5 @@ public class Ticket {
     public void setStato(Stato stato) {
         this.stato = stato;
     }
-
 
 }
