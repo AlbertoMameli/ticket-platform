@@ -1,0 +1,9 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh; /* <-- USA QUESTO */
+}
+
+main {
+    flex: 1;
+}
