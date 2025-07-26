@@ -3,6 +3,7 @@ package org.lessons.milestone4.ticket.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -39,19 +40,19 @@ public class Ticket {
     private LocalDateTime dataCreazione;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference("ticked-note")
     private List<Nota> note;
 
     @ManyToOne
     @JoinColumn(name = "operatore_id", nullable = false)
     @NotNull(message = "Il ticket deve essere assegnato a un operatore")
-    @JsonManagedReference
+    @JsonBackReference("ticked-operatore")
     private User operatore;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     @NotNull(message = "Il ticket deve avere una categoria")
-    @JsonManagedReference
+    @JsonBackReference("ticked-categoria")
     private Categoria categoria;
 
     @ManyToOne

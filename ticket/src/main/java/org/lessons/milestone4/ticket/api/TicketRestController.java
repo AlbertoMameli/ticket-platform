@@ -8,9 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +28,7 @@ public class TicketRestController {
 
     // Metodo INDEX 
     @GetMapping
-    public ResponseEntity<List<Ticket>> list(
+    public ResponseEntity<List<Ticket>> index(
             @RequestParam Optional<String> stato,
             @RequestParam Optional<Integer> categoriaId) {
 
@@ -58,5 +62,13 @@ public class TicketRestController {
             // Altrimenti, ritorna 404 Not Found
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PostMapping
+    public ResponseEntity<Ticket> create(@RequestBody Ticket newTicket) {
+        
+        Ticket saveTicket = ticketRepository.save(newTicket);
+        
+        return new ResponseEntity<>(saveTicket, HttpStatus.CREATED);
     }
 }
