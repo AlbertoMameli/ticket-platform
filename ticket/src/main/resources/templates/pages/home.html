@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/head:: head('Help Desk - Home')}"></head>
 
@@ -11,21 +11,27 @@
         <div sec:authorize="!isAuthenticated()">
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <h1 class="text-center mb-4">Accedi alla Piattaforma</h1>
+                    <h1 class="text-center mb-4">Mar.ma.ris Login</h1>
                     <div class="card">
                         <div class="card-body p-4">
                             <div th:if="${param.error}" class="alert alert-danger">
                                 Email o password non validi.
                             </div>
 
-                            <form th:action="@{/login}" method="POST">
+                            <form th:action="@{/login}" method="POST" th:object="${user}">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Email</label>
                                     <input type="email" class="form-control" id="username" name="username">
+                                    <div th:if="${#fields.hasErrors('email')}" class="invalid-feedback"
+                                        th:errors="*{email}"></div>
+
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label">Password</label>
                                     <input type="password" class="form-control" id="password" name="password">
+                                    <div th:if="${#fields.hasErrors('password')}" class="invalid-feedback"
+                                        th:errors="*{password}"></div>
+
                                 </div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">Login</button>
@@ -50,8 +56,7 @@
                     <a th:href="@{/users/show}" class="btn btn-secondary btn-lg">Vedi il tuo Profilo</a>
                 </div>
                 <div class="nav-item ms-2" sec:authorize="hasAuthority('ADMIN')">
-                    <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">Crea
-                            Nuovo Ticket</span>
+                    <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">Crea Nuovo Ticket</span>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head th:replace="~{fragments/head :: head('Gestione Utenti')}"></head>
 
@@ -7,7 +7,7 @@
     <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
     <main class="container my-5">
-        <h1 class="mb-4">Elenco Utenti del Sistema</h1>
+        <h1 class="mb-4">Elenco Operatori</h1>
 
         <div th:if="${userList.isEmpty()}" class="alert alert-info">
             Nessun utente trovato.

@@ -11,12 +11,12 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
-@EnableWebSecurity
+@Configuration//questa non è una classe normale, ma una classe di configurazione..
+@EnableWebSecurity//sto dicendo che queste  istruzioni sono di Spring
 public class SecurityConfiguration {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //gestisce le autorizzazioni 
         http.authorizeHttpRequests(requests -> requests
                 // REGOLE SPECIFICHE
                 .requestMatchers(HttpMethod.POST, "/tickets/*/editStato").hasAnyAuthority("ADMIN", "OPERATORE")
@@ -28,10 +28,10 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/tickets/create", "/tickets/*/edit", "/tickets/*/delete")
                 .hasAuthority("ADMIN")
 
-                // REGOLE GENERALI (rimangono uguali)
-                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()
-                .requestMatchers("/**").permitAll())
-                .formLogin(Customizer.withDefaults())
+                // REGOLE GENERALI 
+                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()//basta essersi autenticato per vedere queste pagine
+                .requestMatchers("/**").permitAll())//queste possono essere accessibili  a tutti 
+                .formLogin(Customizer.withDefaults())//pagina login html e didefoult
                 .logout(logout -> logout.logoutSuccessUrl("/"))
                 .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable());
@@ -52,7 +52,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {//codifica le password e non le mostra in chiaro
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
