@@ -197,7 +197,8 @@ public class TicketController {
 
     // Metodo per mostrare la pagina di modifica di un ticket esistente.
     @GetMapping("/{id}/edit")
-    public String edit(@PathVariable Integer id, Model model, Authentication authentication) {
+    public String edit(@PathVariable /* segnaposto che recupera le info dell id */ Integer id, Model model,
+            Authentication authentication) {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket da modificare non trovato!");
@@ -233,6 +234,8 @@ public class TicketController {
             bindingResult.addError(new FieldError("ticket", "descrizione", "La descrizione è obbligatoria"));
 
         if (bindingResult.hasErrors()) {
+            formTicket.setCategoria(ticketToUpdate.getCategoria());
+            formTicket.setOperatore(ticketToUpdate.getOperatore());
             model.addAttribute("users", getUtentiAssegnabiliDisponibili());
             model.addAttribute("categorie", categoriaRepository.findAll());
             return "tickets/edit";
