@@ -191,7 +191,7 @@ public class TicketController {
         formTicket.setStato(statoIniziale);
 
         ticketRepository.save(formTicket); // Salvo il ticket nel database.
-
+        aggiornaDisponibilitaOperatore(formTicket);
         return "redirect:/tickets"; // E reindirizzo l'utente alla lista dei ticket.
     }
 
@@ -255,6 +255,7 @@ public class TicketController {
         ticketToUpdate.setOperatore(optionalOperatore.get());
 
         ticketRepository.save(ticketToUpdate); // Salvo le modifiche.
+        aggiornaDisponibilitaOperatore(formTicket);
 
         return "redirect:/tickets";
     }
@@ -344,5 +345,26 @@ public class TicketController {
             }
         }
         return utentiDisponibili;
+    }
+
+
+
+    
+    //metodo per aggiornare lo stato dell operatore in auto
+
+    private void aggiornaDisponibilitaOperatore(Ticket ticket) {
+        // Prendo l'operatore e lo stato del ticket
+        User operatore = ticket.getOperatore();
+        String statoTicket = ticket.getStato().getValore();
+
+        // Se il ticket è aperto ("Da fare" o "In corso")...
+        if (statoTicket.equals("Da fare") || statoTicket.equals("In corso")) {
+            // ...e l'operatore è attualmente segnato come disponibile...
+            if (operatore.isDisponibile()) {
+                // ...lo imposto come "Non Disponibile" e salvo la modifica.
+                operatore.setDisponibile(false);
+                userRepository.save(operatore);
+            }
+        }
     }
 }
