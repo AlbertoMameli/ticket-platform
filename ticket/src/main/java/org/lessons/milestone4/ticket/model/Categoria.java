@@ -28,7 +28,7 @@ public class Categoria {
     private String nome;
 
     @OneToMany(mappedBy = "categoria")
-    @JsonManagedReference("ticked-categoria")
+    @JsonManagedReference
     private List<Ticket> tickets;
 
     // --- Getters e Setters ---

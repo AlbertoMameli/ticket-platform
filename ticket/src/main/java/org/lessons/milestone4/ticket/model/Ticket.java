@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tickets")
@@ -29,35 +30,34 @@ public class Ticket {
     private Integer id;
 
     @NotBlank(message = "Il titolo del ticket non può essere vuoto!")
+    @Size(max = 50)
     private String titolo;
 
     @Lob
+    @Size(min = 10, max = 300)
     @NotBlank(message = "La descrizione non può essere vuota!")
     private String descrizione;
 
-    @NotNull(message = "Inserisci la data di creazione!")
+    
     @PastOrPresent(message = "La data di creazione non può essere nel futuro")
     private LocalDateTime dataCreazione;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("ticked-note")
+    @JsonManagedReference
     private List<Nota> note;
 
     @ManyToOne
     @JoinColumn(name = "operatore_id", nullable = false)
-    @NotNull(message = "Il ticket deve essere assegnato a un operatore")
-    @JsonBackReference("ticked-operatore")
+    @JsonBackReference
     private User operatore;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
-    @NotNull(message = "Il ticket deve avere una categoria")
-    @JsonBackReference("ticked-categoria")
+    @JsonBackReference
     private Categoria categoria;
 
     @ManyToOne
     @JoinColumn(name = "stato_id", nullable = false)
-    @NotNull(message = "Lo stato non può essere nullo")
     private Stato stato;
 
     public Integer getId() {

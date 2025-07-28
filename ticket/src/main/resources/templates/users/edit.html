@@ -34,10 +34,16 @@
                                 <label for="disponibile" class="form-label">Imposta il tuo stato</label>
                                 <select id="disponibile" class="form-select" th:field="*{disponibile}">
                                     <option th:value="true">Disponibile</option>
-                                    <option th:value="false">Non Disponibile</option>
+
+                                    <option th:value="false" th:disabled="${haTicketAperti}"
+                                        th:title="${haTicketAperti} ? 'Non puoi essere NON Disponibile con ticket aperti' : ''">
+                                        Non Disponibile
+                                    </option>
                                 </select>
-                                <div class="form-text">
-                                    Se hai ticket aperti, non potrai impostare lo stato su "Non Disponibile".
+
+                                <div th:if="${haTicketAperti}" class="form-text text-danger mt-1">
+                                    Non puoi impostare lo stato su <strong>"Non Disponibile"</strong> perché hai dei
+                                    ticket non completati.
                                 </div>
                             </div>
 

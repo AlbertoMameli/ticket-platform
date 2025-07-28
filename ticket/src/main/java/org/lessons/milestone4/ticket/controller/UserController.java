@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/users") 
+@RequestMapping("/users")
 public class UserController {
 
     // Come per il TicketController, mi faccio "iniettare" da Spring i repository
@@ -29,12 +29,12 @@ public class UserController {
     @Autowired
     private TicketRepository ticketRepository;
 
-    
     @GetMapping
     // Invece di un controllo manuale, uso questa annotazione di Spring Security.
     // Dice: "Solo un utente che ha l'autorità 'ADMIN' può eseguire questo metodo".
-    // È un modo più diretto e dichiarativo per gestire la sicurezza. 
-    //il metodo che ho usato nel ticketcontroller eseguiva il controllo una volta entrato.. invece qua mi blocca prima di entrare..
+    // È un modo più diretto e dichiarativo per gestire la sicurezza.
+    // il metodo che ho usato nel ticketcontroller eseguiva il controllo una volta
+    // entrato.. invece qua mi blocca prima di entrare..
     @PreAuthorize("hasAuthority('ADMIN')")
     public String index(Model model) {
         // Prendo tutti gli utenti dal database e li passo alla vista.
@@ -76,20 +76,26 @@ public class UserController {
      * Questo metodo mostra il form per modificare il proprio profilo.
      */
     @GetMapping("/edit")
-    public String edit(Model model, Authentication authentication) {
-        // La logica per trovare l'utente è identica a quella del metodo 'show'.
-        Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
+public String edit(Model model, Authentication authentication) {
+    Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
 
-        if (userOpt.isEmpty()) {
-            return "redirect:/logout";
-        }
-
-        // Passo l'utente trovato al model, così il form sarà pre-compilato con i suoi
-        // dati.
-        model.addAttribute("utente", userOpt.get());
-
-        return "users/edit"; // Mostro la pagina di modifica.
+    if (userOpt.isEmpty()) {
+        return "redirect:/logout";
     }
+    
+    // Prendiamo l'utente dall'Optional
+    User utente = userOpt.get();
+    
+    model.addAttribute("utente", utente);
+
+    // Controlla se l'utente ha ticket non completati USANDO L'ID CORRETTO
+    Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(utente.getId(), "COMPLETATO");
+    
+    // Passa un booleano al template
+    model.addAttribute("haTicketAperti", ticketAperti > 0);
+
+    return "users/edit"; 
+}
 
     /**
      * Questo metodo riceve i dati dal form e salva le modifiche al profilo.
@@ -131,8 +137,6 @@ public class UserController {
                 return "redirect:/users/edit";
             }
         }
-
-        // --- PARTE 3: Aggiornamento e salvataggio ---
         // Se tutti i controlli sono passati, aggiorno i dati dell'utente con
         // quelli che ho ricevuto dal form.
 

@@ -34,7 +34,7 @@ public class Nota {
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", nullable = false)
-    @JsonBackReference("ticked-note")
+    @JsonBackReference
     private Ticket ticket;
 
     @ManyToOne

@@ -1,6 +1,5 @@
 package org.lessons.milestone4.ticket.controller;
 
-
 import org.lessons.milestone4.ticket.model.Categoria;
 import org.lessons.milestone4.ticket.model.Nota;
 import org.lessons.milestone4.ticket.model.Role;
@@ -29,16 +28,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Optional;
 
-@Controller//dto dicendo.. heyy! da ora in poi lavoro le richieste che arrivano dal web e in base a ciò che mi chiedi ti restituisco la pagina html..
-@RequestMapping("/tickets") //dice a Spring : voglio mappare, cioè collegare, le richieste web a questa classe..
+@Controller // dto dicendo.. heyy! da ora in poi lavoro le richieste che arrivano dal web e
+            // in base a ciò che mi chiedi ti restituisco la pagina html..
+@RequestMapping("/tickets") // dice a Spring : voglio mappare, cioè collegare, le richieste web a questa
+                            // classe..
 public class TicketController {
- //------dependency injenction
+    // ------dependency injenction
     // Qui mi preparo tutti i Repository che mi servono per parlare col database.
     // Grazie a @Autowired, Spring me li fornirà già pronti all'uso.
     @Autowired
@@ -54,29 +57,33 @@ public class TicketController {
 
     // Questo è il metodo principale, quello che mostra la lista di tutti i ticket.
     @GetMapping
-    public String index(Model model/*serve per passare gli oggetti java alla pagina HTML*/, Authentication authentication/*spring security.. la nostra autenticazione */, @RequestParam(name = "q", required = false) String keyword) {
+    public String index(Model model/* serve per passare gli oggetti java alla pagina HTML */,
+            Authentication authentication/* spring security.. la nostra autenticazione */,
+            @RequestParam(name = "q", required = false) String keyword) {
         // Devo recuperare l'utente dal DB usando l'email che trovo nell'oggetto
-        // Authentication.
-        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());//assegno a optionalUser i dati che trovo inbase alla email.
-        User utenteLoggato;//dichiaro una variabile vuota..
-        if (optionalUser.isPresent()) {//se i dati inserirti sono presenti..
-            utenteLoggato = optionalUser.get();//allora lo assegno alla  variabile
+        // Authentication da spring security
+        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());// assegno a optionalUser i
+                                                                                           // dati che trovo inbase alla
+                                                                                           // email.
+        User utenteLoggato;// dichiaro una variabile vuota..
+        if (optionalUser.isPresent()) {// se i dati inserirti sono presenti..
+            utenteLoggato = optionalUser.get();// allora lo assegno alla variabile
         } else {
             // Se non lo trovo,cè un errore e quindi blocco tutto.
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utente non trovato!");
         }
 
-        // Ora controllo se l'utente è un ADMIN. Lo faccio con un ciclo for per
-        // chiarezza.
+        // Ora controllo se l'utente è un ADMIN.
         boolean isAdmin = false;
-        for (GrantedAuthority ruolo : authentication.getAuthorities()) {//cicliamop ogni ruolo che può avere l'utente...
-            if (ruolo.getAuthority().equals("ADMIN")) {//se il ruolo che troviamo è admin 
+        for (GrantedAuthority ruolo : authentication.getAuthorities()) {// cicliamop ogni ruolo che può avere
+                                                                        // l'utente...
+            if (ruolo.getAuthority().equals("ADMIN")) {// se il ruolo che troviamo è admin
                 isAdmin = true;
                 break; // Ho trovato il ruolo, inutile continuare a ciclare.
             }
         }
 
-    //parte relativa ai tickets..
+        // parte relativa ai tickets..
         List<Ticket> tickets;
 
         if (isAdmin) {
@@ -115,7 +122,7 @@ public class TicketController {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato!");
-        }//assegno alla liosta dei tickets il ticket..
+        } // assegno alla liosta dei tickets il ticket..
         Ticket ticket = optionalTicket.get();
 
         // Controllo se l'utente ha il permesso di vedere questo ticket.
@@ -134,6 +141,7 @@ public class TicketController {
     @GetMapping("/create")
     public String create(Model model) {
         model.addAttribute("ticket", new Ticket()); // Un ticket vuoto per il form.
+        // menù select
         model.addAttribute("users", getUtentiAssegnabiliDisponibili()); // La lista di utenti a cui assegnarlo.
         model.addAttribute("categorie", categoriaRepository.findAll()); // E le categorie.
         return "tickets/create";
@@ -141,25 +149,26 @@ public class TicketController {
 
     // Metodo che riceve i dati del form di creazione e salva il ticket.
     @PostMapping("/create")
-    public String store(@ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult,
+    public String store(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult,
             @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
             @RequestParam(name = "operatoreId", required = false) Integer operatoreId, Model model) {
 
-        // Faccio una validazione manuale, campo per campo.
-        if (formTicket.getTitolo().trim().isEmpty())
-            bindingResult.addError(new FieldError("ticket", "titolo", "Il titolo è obbligatorio"));
-        if (formTicket.getDescrizione().trim().isEmpty())
-            bindingResult.addError(new FieldError("ticket", "descrizione", "La descrizione è obbligatoria"));
+        // Faccio una validazione manuale
         if (categoriaId == null)
             bindingResult.addError(new FieldError("ticket", "categoria", "La categoria è obbligatoria"));
-        if (operatoreId == null)
+        if (operatoreId == null) {
             bindingResult.addError(new FieldError("ticket", "operatore", "L'operatore è obbligatorio"));
+        }
 
         // Se ci sono stati errori di validazione...
         if (bindingResult.hasErrors()) {
+
             // ...devo ricaricare i dati per i menu a tendina...
             model.addAttribute("users", getUtentiAssegnabiliDisponibili());
             model.addAttribute("categorie", categoriaRepository.findAll());
+            model.addAttribute("categoriaId", categoriaId);
+            model.addAttribute("operatoreId", operatoreId);
+
             // ...e mostrare di nuovo il form di creazione con gli errori.
             return "tickets/create";
         }
@@ -178,7 +187,8 @@ public class TicketController {
         formTicket.setCategoria(optionalCategoria.get());
         formTicket.setOperatore(optionalOperatore.get());
         formTicket.setDataCreazione(LocalDateTime.now()); // Imposto io la data di creazione.
-        formTicket.setStato(optionalStato.get());
+        Stato statoIniziale = statoRepository.findByValore("Da fare").orElseThrow();
+        formTicket.setStato(statoIniziale);
 
         ticketRepository.save(formTicket); // Salvo il ticket nel database.
 
@@ -205,7 +215,7 @@ public class TicketController {
 
     // Metodo che riceve i dati dal form di modifica e aggiorna il ticket.
     @PostMapping("/{id}/edit")
-    public String update(@PathVariable Integer id, @ModelAttribute("ticket") Ticket formTicket,
+    public String update(@Valid @PathVariable Integer id, @ModelAttribute("ticket") Ticket formTicket,
             BindingResult bindingResult,
             @RequestParam("categoriaId") Integer categoriaId,
             @RequestParam("operatoreId") Integer operatoreId, Authentication authentication, Model model) {
@@ -219,8 +229,6 @@ public class TicketController {
         operatoreOAdmin(ticketToUpdate, authentication);
 
         // Validazione
-        if (formTicket.getTitolo().trim().isEmpty())
-            bindingResult.addError(new FieldError("ticket", "titolo", "Il titolo è obbligatorio"));
         if (formTicket.getDescrizione().trim().isEmpty())
             bindingResult.addError(new FieldError("ticket", "descrizione", "La descrizione è obbligatoria"));
 
@@ -294,7 +302,7 @@ public class TicketController {
         // Recupero i dettagli specifici del mio utente.
         DatabaseUserDetails userDetails = (DatabaseUserDetails) authentication.getPrincipal();
 
-        // Controllo se è admin 
+        // Controllo se è admin
         boolean isAdmin = false;
         for (GrantedAuthority ruolo : authentication.getAuthorities()) {
             if (ruolo.getAuthority().equals("ADMIN")) {
