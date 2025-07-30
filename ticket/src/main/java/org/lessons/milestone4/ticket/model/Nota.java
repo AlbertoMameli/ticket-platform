@@ -3,6 +3,7 @@ package org.lessons.milestone4.ticket.model;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +41,7 @@ public class Nota {
     @ManyToOne
     @JoinColumn(name = "autore_id", nullable = false)
     @NotNull
+    @JsonIgnoreProperties({"tickets", "roles", "password"})
     private User autore;
 
     public Integer getId() {

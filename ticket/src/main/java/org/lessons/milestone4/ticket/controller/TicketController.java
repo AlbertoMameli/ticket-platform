@@ -87,7 +87,8 @@ public class TicketController {
         List<Ticket> tickets;
 
         if (isAdmin) {
-            // Se è un admin, può vedere tutti i ticket.
+            //admin
+            
             if (keyword != null && !keyword.isEmpty()) {
                 // Se ha cercato qualcosa, filtro per titolo.
                 tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
@@ -96,7 +97,8 @@ public class TicketController {
                 tickets = ticketRepository.findAll();
             }
         } else {
-            // Se non è un admin, vede solo i ticket assegnati a lui.
+            //operatore
+            
             if (keyword != null && !keyword.isEmpty()) {
                 // Se ha cercato qualcosa, filtro tra i suoi ticket.
                 tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
@@ -180,7 +182,7 @@ public class TicketController {
 
         // Devo controllare che categoria, operatore e stato esistano prima di salvare.
         if (optionalCategoria.isEmpty() || optionalOperatore.isEmpty() || optionalStato.isEmpty()) {
-            // Se qualcosa non esiste, è un errore grave. Per ora lo gestisco così.
+            // Se qualcosa non esiste...
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dati non validi per la creazione del ticket.");
         }
 
