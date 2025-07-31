@@ -36,14 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Controller // dto dicendo.. heyy! da ora in poi lavoro le richieste che arrivano dal web e
-            // in base a ciò che mi chiedi ti restituisco la pagina html..
-@RequestMapping("/tickets") // dice a Spring : voglio mappare, cioè collegare, le richieste web a questa
-                            // classe..
+@Controller
+@RequestMapping("/tickets")
 public class TicketController {
-    // ------dependency injenction
-    // Qui mi preparo tutti i Repository che mi servono per parlare col database.
-    // Grazie a @Autowired, Spring me li fornirà già pronti all'uso.
+
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired
@@ -55,76 +51,57 @@ public class TicketController {
     @Autowired
     private StatoRepository statoRepository;
 
-    // Questo è il metodo principale, quello che mostra la lista di tutti i ticket.
     @GetMapping
-    public String index(Model model/* serve per passare gli oggetti java alla pagina HTML */,
-            Authentication authentication/* spring security.. la nostra autenticazione */,
+    public String index(Model model, Authentication authentication,
             @RequestParam(name = "q", required = false) String keyword) {
-        // Devo recuperare l'utente dal DB usando l'email che trovo nell'oggetto
-        // Authentication da spring security
-        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());// assegno a optionalUser i
-                                                                                           // dati che trovo inbase alla
-                                                                                           // email.
-        User utenteLoggato;// dichiaro una variabile vuota..
-        if (optionalUser.isPresent()) {// se i dati inserirti sono presenti..
-            utenteLoggato = optionalUser.get();// allora lo assegno alla variabile
+        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());
+        User utenteLoggato;
+        if (optionalUser.isPresent()) {
+            utenteLoggato = optionalUser.get();
         } else {
-            // Se non lo trovo,cè un errore e quindi blocco tutto.
+
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utente non trovato!");
         }
 
-        // Ora controllo se l'utente è un ADMIN.
         boolean isAdmin = false;
-        for (GrantedAuthority ruolo : authentication.getAuthorities()) {// cicliamop ogni ruolo che può avere
-                                                                        // l'utente...
-            if (ruolo.getAuthority().equals("ADMIN")) {// se il ruolo che troviamo è admin
+        for (GrantedAuthority ruolo : authentication.getAuthorities()) {
+            if (ruolo.getAuthority().equals("ADMIN")) {
                 isAdmin = true;
-                break; // Ho trovato il ruolo, inutile continuare a ciclare.
+                break;
             }
         }
 
-        // parte relativa ai tickets..
         List<Ticket> tickets;
 
         if (isAdmin) {
-            // admin
-
             if (keyword != null && !keyword.isEmpty()) {
-                // Se ha cercato qualcosa, filtro per titolo.
                 tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
             } else {
-                // Altrimenti, li prendo tutti.
                 tickets = ticketRepository.findAll();
             }
         } else {
-            // operatore
-
             if (keyword != null && !keyword.isEmpty()) {
-                // Se ha cercato qualcosa, filtro tra i suoi ticket.
                 tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
                         keyword);
             } else {
-                // Altrimenti, prendo tutti i suoi ticket.
                 tickets = ticketRepository.findByOperatoreId(utenteLoggato.getId());
             }
         }
 
-        // Aggiungo la lista di ticket al model, così la pagina può mostrarla.
         model.addAttribute("tickets", tickets);
-        model.addAttribute("keyword", keyword); // Passo anche la keyword, per mostrarla nel campo di ricerca.
-        model.addAttribute("stati", statoRepository.findAll()); // E la lista degli stati per i mini-form.
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("stati", statoRepository.findAll());
 
-        return "tickets/index"; // Dico a Spring di mostrare la pagina index.html
+        return "tickets/index";
     }
 
-    // Metodo per vedere il dettaglio di un singolo ticket.
     @GetMapping("/{id}")
     public String show(@PathVariable Integer id, Model model, Authentication authentication) {
         // Cerco il ticket per ID. Se non lo trovo, gestisco l'errore.
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato!");
-        } // assegno alla liosta dei tickets il ticket..
+        } // assegno alla lista dei tickets il ticket..
         Ticket ticket = optionalTicket.get();
 
         // Controllo se l'utente ha il permesso di vedere questo ticket.
@@ -206,7 +183,7 @@ public class TicketController {
         operatoreOAdmin(ticket, authentication); // Solito controllo di sicurezza.
 
         model.addAttribute("ticket", ticket); // Passo il ticket da modificare.
-        model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin());
         model.addAttribute("categorie", categoriaRepository.findAll());
 
         return "tickets/edit";
@@ -214,14 +191,11 @@ public class TicketController {
 
     // Metodo che riceve i dati dal form di modifica e aggiorna il ticket.
     @PostMapping("/{id}/edit")
-    public String update(
-            @Valid @PathVariable Integer id,
-            @ModelAttribute("ticket") Ticket formTicket,
+    public String update(@PathVariable Integer id, @Valid @ModelAttribute("ticket") Ticket formTicket,
             BindingResult bindingResult,
             @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
             @RequestParam(name = "operatoreId", required = false) Integer operatoreId,
-            Authentication authentication,
-            Model model) {
+            Authentication authentication, Model model) {
 
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
@@ -258,7 +232,7 @@ public class TicketController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dati non validi per l'aggiornamento.");
         }
 
-        // ✅ Mantieni lo stato attuale (non modificarlo)
+        // Mantieni lo stato attuale (non modificarlo)
         Stato statoOriginale = ticketToUpdate.getStato();
 
         // Aggiorna i dati modificabili
@@ -315,18 +289,12 @@ public class TicketController {
 
     // --- METODI DI SUPPORTO ---
 
-
-    // metodo per controllo operatori e la disponibilità
     private boolean ciSonoOperatoriDisponibili() {
         return getUtentiAssegnabiliDisponibili().size() > 0;
     }
 
-    // metodo per controllare se l'utente è l'operatore del ticket o un admin.
     private void operatoreOAdmin(Ticket ticket, Authentication authentication) {
-        // Recupero i dettagli specifici del mio utente.
         DatabaseUserDetails userDetails = (DatabaseUserDetails) authentication.getPrincipal();
-
-        // controllo se è admin
         boolean isAdmin = false;
         for (GrantedAuthority ruolo : authentication.getAuthorities()) {
             if (ruolo.getAuthority().equals("ADMIN")) {
@@ -334,15 +302,11 @@ public class TicketController {
                 break;
             }
         }
-
-        // se non è un admin E non è l'operatore del ticket, allora non può accedere.
         if (!isAdmin && !ticket.getOperatore().getId().equals(userDetails.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accesso negato");
         }
     }
 
-    // etodo per prendere la lista di utenti che possono essere assegnati a un
-    // ticket.
     private List<User> getUtentiAssegnabiliDisponibili() {
         List<User> utentiDisponibili = new ArrayList<>();
 
@@ -367,7 +331,18 @@ public class TicketController {
         return utentiDisponibili;
     }
 
-    // metodo per aggiornare lo stato dell operatore in auto
+    private List<User> getUtentiConRuoloOperatoreOAdmin() {
+        List<User> utenti = new ArrayList<>();
+        for (User u : userRepository.findAll()) {
+            for (Role r : u.getRoles()) {
+                if (r.getNome().equals("OPERATORE") || r.getNome().equals("ADMIN")) {
+                    utenti.add(u);
+                    break;
+                }
+            }
+        }
+        return utenti;
+    }
 
     private void aggiornaDisponibilitaOperatore(Ticket ticket) {
         // Prendo l'operatore e lo stato del ticket

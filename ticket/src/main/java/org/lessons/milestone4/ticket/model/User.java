@@ -3,7 +3,8 @@ package org.lessons.milestone4.ticket.model;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,11 +44,11 @@ public class User { // Questa entità rappresenta sia Admin che Operatore
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    @JsonManagedReference("user-role")
+    @JsonIgnore
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "operatore")
-    @JsonManagedReference("ticked-operatore")
+    @JsonIgnore
     private List<Ticket> tickets;
 
     // --- Getters e Setters ---

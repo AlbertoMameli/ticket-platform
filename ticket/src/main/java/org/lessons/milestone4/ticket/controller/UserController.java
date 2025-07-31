@@ -76,26 +76,26 @@ public class UserController {
      * Questo metodo mostra il form per modificare il proprio profilo.
      */
     @GetMapping("/edit")
-public String edit(Model model, Authentication authentication) {
-    Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
+    public String edit(Model model, Authentication authentication) {
+        Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
 
-    if (userOpt.isEmpty()) {
-        return "redirect:/logout";
+        if (userOpt.isEmpty()) {
+            return "redirect:/logout";
+        }
+
+        // Prendiamo l'utente dall'Optional
+        User utente = userOpt.get();
+
+        model.addAttribute("utente", utente);
+
+        // Controlla se l'utente ha ticket non completati USANDO L'ID CORRETTO
+        Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(utente.getId(), "COMPLETATO");
+
+        // Passa un booleano al template
+        model.addAttribute("haTicketAperti", ticketAperti > 0);
+
+        return "users/edit";
     }
-    
-    // Prendiamo l'utente dall'Optional
-    User utente = userOpt.get();
-    
-    model.addAttribute("utente", utente);
-
-    // Controlla se l'utente ha ticket non completati USANDO L'ID CORRETTO
-    Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(utente.getId(), "COMPLETATO");
-    
-    // Passa un booleano al template
-    model.addAttribute("haTicketAperti", ticketAperti > 0);
-
-    return "users/edit"; 
-}
 
     /**
      * Questo metodo riceve i dati dal form e salva le modifiche al profilo.
@@ -104,54 +104,33 @@ public String edit(Model model, Authentication authentication) {
     public String update(@ModelAttribute("utente") User formUtente, Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
-        // Devo recuperare la versione "reale" dell'utente dal DB. Non mi fido
-        // dell'oggetto che arriva dal form per motivi di sicurezza.
-
         Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
         if (userOpt.isEmpty()) {
-            // Anche qui, se l'utente non esiste, lo mando al logout.
             return "redirect:/logout";
         }
-        User userDaSalvare = userOpt.get(); // Questo è l'utente che modificherò e salverò.
 
-        // Ho una regola importante: un utente non può mettersi 'Non disponibile'
-        // se ha ancora dei ticket aperti. Devo controllarlo.
+        User userDaSalvare = userOpt.get();
 
-        // La condizione si attiva solo se l'utente sta cercando di impostarsi come non
-        // disponibile.
+        // Se sta cercando di diventare "non disponibile"...
         if (!formUtente.isDisponibile()) {
-            // Conto quanti ticket ha l'utente il cui stato NON è 'COMPLETATO'.
-            Integer ticketAperti = ticketRepository.countByOperatoreIdAndStato_ValoreNot(userDaSalvare.getId(),
-                    "COMPLETATO");
+            // Controllo se ha almeno un ticket in stato "Da fare" o "In corso"
+            List<String> statiAttivi = List.of("Da fare", "In corso");
+            int ticketAttivi = ticketRepository.countByOperatoreIdAndStato_ValoreIn(userDaSalvare.getId(), statiAttivi);
 
-            // Se il numero di ticket aperti è maggiore di zero...
-            if (ticketAperti > 0) {
-                // ...non posso procedere. Devo avvisare l'utente.
-                // Uso 'RedirectAttributes' per passare un messaggio di errore alla pagina
-                // a cui sto reindirizzando. Questo messaggio "sopravvive" al redirect.
+            if (ticketAttivi > 0) {
                 redirectAttributes.addFlashAttribute("errorMessage",
-                        "Non puoi impostare lo stato su 'Non disponibile' perché hai " + ticketAperti
-                                + " ticket non completati.");
-
-                // Reindirizzo l'utente di nuovo alla pagina di modifica.
+                        "Non puoi impostare lo stato su 'Non disponibile' perché hai " + ticketAttivi
+                                + " ticket attivi ('Da fare' o 'In corso').");
                 return "redirect:/users/edit";
             }
         }
-        // Se tutti i controlli sono passati, aggiorno i dati dell'utente con
-        // quelli che ho ricevuto dal form.
 
+        // Aggiorno i dati
         userDaSalvare.setNome(formUtente.getNome());
         userDaSalvare.setDisponibile(formUtente.isDisponibile());
-
-        // Salvo l'utente aggiornato nel database.
         userRepository.save(userDaSalvare);
 
-        // Invio un messaggio di successo per confermare che l'operazione è andata a
-        // buon fine.
         redirectAttributes.addFlashAttribute("successMessage", "Profilo aggiornato con successo!");
-
-        // Reindirizzo l'utente alla pagina di modifica, dove vedrà il messaggio di
-        // successo.
         return "redirect:/users/edit";
     }
 }

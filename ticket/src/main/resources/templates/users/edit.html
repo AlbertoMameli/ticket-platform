@@ -21,7 +21,7 @@
 
                             <div class="mb-3">
                                 <label for="nome" class="form-label">Nome</label>
-                                <input type="text" id="nome" class="form-control" th:field="*{nome}">
+                                <input type="text" id="nome" class="form-control" th:field="*{nome}" required>
                             </div>
 
                             <div class="mb-3">
@@ -35,10 +35,15 @@
                                 <select id="disponibile" class="form-select" th:field="*{disponibile}">
                                     <option th:value="true">Disponibile</option>
 
-                                    <option th:value="false" th:disabled="${haTicketAperti}"
-                                        th:title="${haTicketAperti} ? 'Non puoi essere NON Disponibile con ticket aperti' : ''">
-                                        Non Disponibile
-                                    </option>
+                                    <th:block th:if="${haTicketAperti}">
+                                        <option th:value="false" disabled
+                                            title="Non puoi essere NON Disponibile con ticket aperti">
+                                            Non Disponibile
+                                        </option>
+                                    </th:block>
+                                    <th:block th:unless="${haTicketAperti}">
+                                        <option th:value="false">Non Disponibile</option>
+                                    </th:block>
                                 </select>
 
                                 <div th:if="${haTicketAperti}" class="form-text text-danger mt-1">
@@ -55,6 +60,7 @@
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
