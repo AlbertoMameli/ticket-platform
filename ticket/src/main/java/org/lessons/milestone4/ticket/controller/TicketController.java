@@ -87,8 +87,8 @@ public class TicketController {
         List<Ticket> tickets;
 
         if (isAdmin) {
-            //admin
-            
+            // admin
+
             if (keyword != null && !keyword.isEmpty()) {
                 // Se ha cercato qualcosa, filtro per titolo.
                 tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
@@ -97,8 +97,8 @@ public class TicketController {
                 tickets = ticketRepository.findAll();
             }
         } else {
-            //operatore
-            
+            // operatore
+
             if (keyword != null && !keyword.isEmpty()) {
                 // Se ha cercato qualcosa, filtro tra i suoi ticket.
                 tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
@@ -155,46 +155,42 @@ public class TicketController {
             @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
             @RequestParam(name = "operatoreId", required = false) Integer operatoreId, Model model) {
 
-        // Faccio una validazione manuale
-        if (categoriaId == null)
-            bindingResult.addError(new FieldError("ticket", "categoria", "La categoria è obbligatoria"));
-        if (operatoreId == null) {
-            bindingResult.addError(new FieldError("ticket", "operatore", "L'operatore è obbligatorio"));
+        // Controllo se ci sono operatori disponibili
+        if (!ciSonoOperatoriDisponibili()) {
+            bindingResult.reject("noOperatori", "Non ci sono operatori disponibili al momento.");
         }
 
-        // Se ci sono stati errori di validazione...
-        if (bindingResult.hasErrors()) {
+        // Validazioni manuali
+        if (categoriaId == null)
+            bindingResult.addError(new FieldError("ticket", "categoria", "La categoria è obbligatoria"));
+        if (operatoreId == null)
+            bindingResult.addError(new FieldError("ticket", "operatore", "L'operatore è obbligatorio"));
 
-            // ...devo ricaricare i dati per i menu a tendina...
+        // Se ci sono errori, ricarica i dati e torna alla form
+        if (bindingResult.hasErrors()) {
             model.addAttribute("users", getUtentiAssegnabiliDisponibili());
             model.addAttribute("categorie", categoriaRepository.findAll());
             model.addAttribute("categoriaId", categoriaId);
             model.addAttribute("operatoreId", operatoreId);
-
-            // ...e mostrare di nuovo il form di creazione con gli errori.
             return "tickets/create";
         }
 
-        // Se è tutto OK, procedo a salvare il ticket.
         Optional<Categoria> optionalCategoria = categoriaRepository.findById(categoriaId);
         Optional<User> optionalOperatore = userRepository.findById(operatoreId);
         Optional<Stato> optionalStato = statoRepository.findByValore("Da fare");
 
-        // Devo controllare che categoria, operatore e stato esistano prima di salvare.
         if (optionalCategoria.isEmpty() || optionalOperatore.isEmpty() || optionalStato.isEmpty()) {
-            // Se qualcosa non esiste...
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dati non validi per la creazione del ticket.");
         }
 
         formTicket.setCategoria(optionalCategoria.get());
         formTicket.setOperatore(optionalOperatore.get());
-        formTicket.setDataCreazione(LocalDateTime.now()); // Imposto io la data di creazione.
-        Stato statoIniziale = statoRepository.findByValore("Da fare").orElseThrow();
-        formTicket.setStato(statoIniziale);
+        formTicket.setDataCreazione(LocalDateTime.now());
+        formTicket.setStato(optionalStato.get());
 
-        ticketRepository.save(formTicket); // Salvo il ticket nel database.
+        ticketRepository.save(formTicket);
         aggiornaDisponibilitaOperatore(formTicket);
-        return "redirect:/tickets"; // E reindirizzo l'utente alla lista dei ticket.
+        return "redirect:/tickets";
     }
 
     // Metodo per mostrare la pagina di modifica di un ticket esistente.
@@ -218,10 +214,14 @@ public class TicketController {
 
     // Metodo che riceve i dati dal form di modifica e aggiorna il ticket.
     @PostMapping("/{id}/edit")
-    public String update(@Valid @PathVariable Integer id, @ModelAttribute("ticket") Ticket formTicket,
+    public String update(
+            @Valid @PathVariable Integer id,
+            @ModelAttribute("ticket") Ticket formTicket,
             BindingResult bindingResult,
-            @RequestParam("categoriaId") Integer categoriaId,
-            @RequestParam("operatoreId") Integer operatoreId, Authentication authentication, Model model) {
+            @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
+            @RequestParam(name = "operatoreId", required = false) Integer operatoreId,
+            Authentication authentication,
+            Model model) {
 
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
@@ -235,29 +235,41 @@ public class TicketController {
         if (formTicket.getDescrizione().trim().isEmpty())
             bindingResult.addError(new FieldError("ticket", "descrizione", "La descrizione è obbligatoria"));
 
+        if (!ciSonoOperatoriDisponibili()) {
+            bindingResult.reject("operatoreIndisponibile", "Nessun operatore disponibile per l'assegnazione.");
+            model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+            model.addAttribute("categorie", categoriaRepository.findAll());
+            return "tickets/edit";
+        }
         if (bindingResult.hasErrors()) {
             formTicket.setCategoria(ticketToUpdate.getCategoria());
             formTicket.setOperatore(ticketToUpdate.getOperatore());
+            formTicket.setStato(ticketToUpdate.getStato()); // Mantieni lo stato originale
             model.addAttribute("users", getUtentiAssegnabiliDisponibili());
             model.addAttribute("categorie", categoriaRepository.findAll());
             return "tickets/edit";
         }
 
-        // Recupero le associazioni
+        // Recupero le entità
         Optional<Categoria> optionalCategoria = categoriaRepository.findById(categoriaId);
         Optional<User> optionalOperatore = userRepository.findById(operatoreId);
+
         if (optionalCategoria.isEmpty() || optionalOperatore.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dati non validi per l'aggiornamento.");
         }
 
-        // Aggiorno i dati del ticket che ho trovato nel DB.
+        // ✅ Mantieni lo stato attuale (non modificarlo)
+        Stato statoOriginale = ticketToUpdate.getStato();
+
+        // Aggiorna i dati modificabili
         ticketToUpdate.setTitolo(formTicket.getTitolo());
         ticketToUpdate.setDescrizione(formTicket.getDescrizione());
         ticketToUpdate.setCategoria(optionalCategoria.get());
         ticketToUpdate.setOperatore(optionalOperatore.get());
+        ticketToUpdate.setStato(statoOriginale); // Stato invariato
 
-        ticketRepository.save(ticketToUpdate); // Salvo le modifiche.
-        aggiornaDisponibilitaOperatore(formTicket);
+        ticketRepository.save(ticketToUpdate);
+        aggiornaDisponibilitaOperatore(ticketToUpdate);
 
         return "redirect:/tickets";
     }
@@ -303,12 +315,18 @@ public class TicketController {
 
     // --- METODI DI SUPPORTO ---
 
-    // Metodo per controllare se l'utente è l'operatore del ticket o un admin.
+
+    // metodo per controllo operatori e la disponibilità
+    private boolean ciSonoOperatoriDisponibili() {
+        return getUtentiAssegnabiliDisponibili().size() > 0;
+    }
+
+    // metodo per controllare se l'utente è l'operatore del ticket o un admin.
     private void operatoreOAdmin(Ticket ticket, Authentication authentication) {
         // Recupero i dettagli specifici del mio utente.
         DatabaseUserDetails userDetails = (DatabaseUserDetails) authentication.getPrincipal();
 
-        // Controllo se è admin
+        // controllo se è admin
         boolean isAdmin = false;
         for (GrantedAuthority ruolo : authentication.getAuthorities()) {
             if (ruolo.getAuthority().equals("ADMIN")) {
@@ -317,13 +335,13 @@ public class TicketController {
             }
         }
 
-        // Se non è un admin E non è l'operatore del ticket, allora non può accedere.
+        // se non è un admin E non è l'operatore del ticket, allora non può accedere.
         if (!isAdmin && !ticket.getOperatore().getId().equals(userDetails.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accesso negato");
         }
     }
 
-    // Metodo per prendere la lista di utenti che possono essere assegnati a un
+    // etodo per prendere la lista di utenti che possono essere assegnati a un
     // ticket.
     private List<User> getUtentiAssegnabiliDisponibili() {
         List<User> utentiDisponibili = new ArrayList<>();
@@ -349,10 +367,7 @@ public class TicketController {
         return utentiDisponibili;
     }
 
-
-
-    
-    //metodo per aggiornare lo stato dell operatore in auto
+    // metodo per aggiornare lo stato dell operatore in auto
 
     private void aggiornaDisponibilitaOperatore(Ticket ticket) {
         // Prendo l'operatore e lo stato del ticket
