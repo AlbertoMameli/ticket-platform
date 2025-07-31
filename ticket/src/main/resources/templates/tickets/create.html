@@ -12,7 +12,11 @@
 
         <form th:action="@{/tickets/create}" method="POST" th:object="${ticket}" class="mt-4">
 
-            <input type="hidden" th:field="*{dataCreazione}">
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+            </div>
+
+            <input type="hidden" th:field="*{dataCreazione}" />
 
             <div class="mb-3">
                 <label for="titolo" class="form-label">Titolo</label>
@@ -26,35 +30,32 @@
                     th:errorClass="is-invalid"></textarea>
                 <div th:if="${#fields.hasErrors('descrizione')}" class="invalid-feedback" th:errors="*{descrizione}">
                 </div>
+            </div>
 
+            <!-- Select Categoria -->
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoria</label>
+                <select name="categoriaId" id="categoria" class="form-select"
+                    th:classappend="${#fields.hasErrors('categoria')} ? 'is-invalid'">
+                    <option value="">Seleziona una categoria</option>
+                    <option th:each="cat : ${categorie}" th:value="${cat.id}" th:text="${cat.nome}"
+                        th:selected="${cat.id == categoriaId}">
+                    </option>
+                </select>
+                <div th:if="${#fields.hasErrors('categoria')}" class="invalid-feedback" th:errors="*{categoria}"></div>
+            </div>
 
-
-                <div class="mt-3">
-                    <label for="categoria" class="form-label">Categoria</label>
-                    <select name="categoriaId" id="categoria" class="form-select"
-                        th:classappend="${#fields.hasErrors('categoria')} ? 'is-invalid' : ''">
-                        <option value="">Seleziona una categoria</option>
-                        <option th:each="cat : ${categorie}" th:value="${cat.id}" th:text="${cat.nome}"
-                            th:selected="${cat.id == categoriaId}"> </option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('categoria')}" class="invalid-feedback" th:errors="*{categoria}">
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <label for="operatore" class="form-label">Operatore</label>
-                    <select name="operatoreId" id="operatore" class="form-select"
-                        th:classappend="${#fields.hasErrors('operatore')} ? 'is-invalid' : ''">
-                        <option value="">Seleziona un operatore</option>
-                        <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.nome}"
-                            th:selected="${user.id == operatoreId}"> </option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('operatore')}" class="invalid-feedback" th:errors="*{operatore}">
-                    </div>
-                </div>
-
-
-
+            <!-- Select Operatore disponibile -->
+            <div class="mb-3">
+                <label for="operatore" class="form-label">Operatore disponibile</label>
+                <select name="operatoreId" id="operatore" class="form-select"
+                    th:classappend="${#fields.hasErrors('operatore')} ? 'is-invalid'">
+                    <option value="">Seleziona un operatore</option>
+                    <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.nome}"
+                        th:selected="${user.id == operatoreId}">
+                    </option>
+                </select>
+                <div th:if="${#fields.hasErrors('operatore')}" class="invalid-feedback" th:errors="*{operatore}"></div>
             </div>
 
             <div class="mt-4">

@@ -33,8 +33,8 @@ public class Ticket {
     private String titolo;
 
     @Lob
+    @NotBlank(message = "Inserire una descrizione")
     @Size(min = 10, max = 300)
-    @NotBlank(message = "La descrizione non può essere vuota!")
     private String descrizione;
 
     

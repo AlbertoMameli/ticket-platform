@@ -15,6 +15,10 @@
                 <button class="btn btn-dark" type="submit">
                     Cerca <i class="fas fa-search"></i> </button>
             </div>
+
+            <div  th:if="*{tickets.isEmpty()}" class="alert alert-info mt-5">
+                Nessun ticket attualmente assegnato.
+            </div>
         </form>
         <table th:unless="${tickets.isEmpty()}" class="table table-striped align-middle">
             <thead class="table-dark">
@@ -89,9 +93,9 @@
         </table>
 
         <div class="nav-item ms-2 mt-5" sec:authorize="hasAuthority('ADMIN')">
-                    <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">+ Crea
-                            Nuovo Ticket</span>
-                </div>
+            <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">+ Crea
+                    Nuovo Ticket</span>
+        </div>
     </main>
     <footer th:replace="~{fragments/footer :: footer}"></footer>
     <th:block th:replace="~{fragments/script :: script}"></th:block>
