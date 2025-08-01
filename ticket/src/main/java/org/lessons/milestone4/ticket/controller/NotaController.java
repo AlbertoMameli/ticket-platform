@@ -33,6 +33,7 @@ public class NotaController {
     private UserRepository userRepository;
 
     /**
+     * la GetMapping create è gestita dal controller di ticket, essendo figlia di Ticket
      * Questo metodo crea una nuova nota e la associa a un ticket esistente.
      * Risponde a una richiesta POST su un URL come /tickets/15/note
      */

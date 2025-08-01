@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DatabaseUserDetailsService implements UserDetailsService  {
-
+//questa è la nostra classe che controlla chi fa l'accesso e lo verifica tramite findbyemail, se trova l'utente lo salva come new databaseuserdetails, 
+//altrimenti  username not found
     @Autowired
     private UserRepository userRepository;
 

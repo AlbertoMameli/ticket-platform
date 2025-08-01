@@ -12,7 +12,7 @@
                         <a class="nav-link" th:href="@{/tickets}">Elenco Ticket</a>
                     </li>
                     <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
-                        <a class="nav-link" th:href="@{/users}">Elenco Utenti</a>
+                        <a class="nav-link" th:href="@{/users}">Elenco Operatori</a>
                     </li>
 
                     <li class="nav-item">
@@ -22,7 +22,7 @@
                 </ul>
                 <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
                     <div class="text-light me-3">
-                        <span sec:authentication="name"></span>
+                        <span sec:authentication="principal.nome"></span>
                     </div>
                     <form class="d-inline" th:action="@{/logout}" method="POST">
                         <button type="submit" class="btn btn-sm btn-danger">Logout</button>

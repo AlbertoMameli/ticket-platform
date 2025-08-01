@@ -81,8 +81,7 @@ public class TicketController {
             }
         } else {
             if (keyword != null && !keyword.isEmpty()) {
-                tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(),
-                        keyword);
+                tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(), keyword);
             } else {
                 tickets = ticketRepository.findByOperatoreId(utenteLoggato.getId());
             }
@@ -241,11 +240,9 @@ public class TicketController {
 
         ticketRepository.save(ticketToUpdate);
 
-
         return "redirect:/tickets";
     }
 
-    // Metodo per aggiornare solo lo stato del ticket.
     @PostMapping("/{id}/editStato")
     public String updateStato(@PathVariable Integer id, @RequestParam("statoId") Integer statoId,
             Authentication authentication) {
@@ -268,7 +265,6 @@ public class TicketController {
         return "redirect:/tickets";
     }
 
-    // Metodo per cancellare un ticket.
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Integer id, Authentication authentication) {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
@@ -306,17 +302,14 @@ public class TicketController {
 
     private List<User> getUtentiAssegnabiliDisponibili() {
         List<User> utentiDisponibili = new ArrayList<>();
-        // Scorro tutti gli utenti del database.
         for (User utente : userRepository.findAll()) {
-            // Per ogni utente, controllo se ha il ruolo giusto.
             boolean haRuoloAssegnabile = false;
-            // Scorro tutti i ruoli di questo utente.
             for (Role ruolo : utente.getRoles()) {
                 if (ruolo.getNome().equals("OPERATORE") || ruolo.getNome().equals("ADMIN")) {
                     haRuoloAssegnabile = true;
                     break; // Trovato un ruolo valido, esco dal ciclo interno.
                 }
-            } // Se l'utente ha il ruolo giusto ED è anche disponibile...
+            }
             if (haRuoloAssegnabile && utente.isDisponibile()) {
                 // ...lo aggiungo alla lista che restituirò.
                 utentiDisponibili.add(utente);

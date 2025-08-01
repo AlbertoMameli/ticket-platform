@@ -15,8 +15,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity // sto dicendo che queste istruzioni sono di Spring
 public class SecurityConfiguration {
 
+
+    //Come ho detto prima questa è una classe di configurazione delle autorizzazioni, 
+    //gestisce il login e logaout e protegge le rotte del progetto
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception { // gestisce le autorizzazioni
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(requests -> requests
                 // REGOLE SPECIFICHE
                 .requestMatchers(HttpMethod.POST, "/tickets/*/editStato").hasAnyAuthority("ADMIN", "OPERATORE")
@@ -37,15 +40,13 @@ public class SecurityConfiguration {
                 // ... dentro il tuo SecurityFilterChain per il web
 
                 .formLogin(form -> form
-                        .loginPage("/") // dice a Spring che il tuo  si trova alla homepage.
+                        .loginPage("/") // login i trova  si trova alla homepage.
                         .loginProcessingUrl("/login")//usrname e password ti arrivano tramite url /login
                         .failureUrl("/?error=true") // se il login fallisce, torna alla homepage con
                                                     // un parametro di errore.
                         .permitAll() // Permetti a tutti di vedere la pagina di login.
                 )
-
-                // ... resto della configurazione (.logout(), etc.)
-                .logout(logout -> logout.logoutSuccessUrl("/"))
+                .logout(logout -> logout.logoutSuccessUrl("/"))// dopo il logout torniamo alla homepage
                 .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable());
 
