@@ -2,7 +2,7 @@ package org.lessons.milestone4.ticket.model;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,7 +25,7 @@ public class Role {
     private String nome;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
-    @JsonBackReference
+    @JsonIgnore
     private Set<User> users;
 
     public Set<User> getUsers() {

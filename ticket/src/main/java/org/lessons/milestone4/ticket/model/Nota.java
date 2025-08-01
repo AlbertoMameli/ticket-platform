@@ -2,7 +2,7 @@ package org.lessons.milestone4.ticket.model;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -35,7 +35,7 @@ public class Nota {
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Ticket ticket;
 
     @ManyToOne

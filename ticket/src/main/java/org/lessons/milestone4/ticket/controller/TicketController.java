@@ -53,7 +53,7 @@ public class TicketController {
 
     @GetMapping
     public String index(Model model, Authentication authentication,
-            @RequestParam(name = "q", required = false) String keyword) {
+            @RequestParam(name = "q", required = false) String keyword /* barra di riercaaaa */) {
         Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());
         User utenteLoggato;
         if (optionalUser.isPresent()) {
@@ -121,7 +121,7 @@ public class TicketController {
     public String create(Model model) {
         model.addAttribute("ticket", new Ticket()); // Un ticket vuoto per il form.
         // menù select
-        model.addAttribute("users", getUtentiAssegnabiliDisponibili()); // La lista di utenti a cui assegnarlo.
+        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin()); // La lista di utenti a cui assegnarlo.
         model.addAttribute("categorie", categoriaRepository.findAll()); // E le categorie.
         return "tickets/create";
     }
@@ -145,7 +145,7 @@ public class TicketController {
 
         // Se ci sono errori, ricarica i dati e torna alla form
         if (bindingResult.hasErrors()) {
-            model.addAttribute("users", getUtentiAssegnabiliDisponibili());
+            model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin());
             model.addAttribute("categorie", categoriaRepository.findAll());
             model.addAttribute("categoriaId", categoriaId);
             model.addAttribute("operatoreId", operatoreId);
@@ -166,14 +166,11 @@ public class TicketController {
         formTicket.setStato(optionalStato.get());
 
         ticketRepository.save(formTicket);
-        aggiornaDisponibilitaOperatore(formTicket);
         return "redirect:/tickets";
     }
 
-    // Metodo per mostrare la pagina di modifica di un ticket esistente.
     @GetMapping("/{id}/edit")
-    public String edit(@PathVariable /* segnaposto che recupera le info dell id */ Integer id, Model model,
-            Authentication authentication) {
+    public String edit(@PathVariable Integer id, Model model, Authentication authentication) {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket da modificare non trovato!");
@@ -243,7 +240,7 @@ public class TicketController {
         ticketToUpdate.setStato(statoOriginale); // Stato invariato
 
         ticketRepository.save(ticketToUpdate);
-        aggiornaDisponibilitaOperatore(ticketToUpdate);
+
 
         return "redirect:/tickets";
     }
@@ -309,7 +306,6 @@ public class TicketController {
 
     private List<User> getUtentiAssegnabiliDisponibili() {
         List<User> utentiDisponibili = new ArrayList<>();
-
         // Scorro tutti gli utenti del database.
         for (User utente : userRepository.findAll()) {
             // Per ogni utente, controllo se ha il ruolo giusto.
@@ -320,9 +316,7 @@ public class TicketController {
                     haRuoloAssegnabile = true;
                     break; // Trovato un ruolo valido, esco dal ciclo interno.
                 }
-            }
-
-            // Se l'utente ha il ruolo giusto ED è anche disponibile...
+            } // Se l'utente ha il ruolo giusto ED è anche disponibile...
             if (haRuoloAssegnabile && utente.isDisponibile()) {
                 // ...lo aggiungo alla lista che restituirò.
                 utentiDisponibili.add(utente);
@@ -333,10 +327,10 @@ public class TicketController {
 
     private List<User> getUtentiConRuoloOperatoreOAdmin() {
         List<User> utenti = new ArrayList<>();
-        for (User u : userRepository.findAll()) {
-            for (Role r : u.getRoles()) {
-                if (r.getNome().equals("OPERATORE") || r.getNome().equals("ADMIN")) {
-                    utenti.add(u);
+        for (User user : userRepository.findAll()) {
+            for (Role role : user.getRoles()) {
+                if (role.getNome().equals("OPERATORE") || role.getNome().equals("ADMIN")) {
+                    utenti.add(user);
                     break;
                 }
             }
@@ -344,19 +338,4 @@ public class TicketController {
         return utenti;
     }
 
-    private void aggiornaDisponibilitaOperatore(Ticket ticket) {
-        // Prendo l'operatore e lo stato del ticket
-        User operatore = ticket.getOperatore();
-        String statoTicket = ticket.getStato().getValore();
-
-        // Se il ticket è aperto ("Da fare" o "In corso")...
-        if (statoTicket.equals("Da fare") || statoTicket.equals("In corso")) {
-            // ...e l'operatore è attualmente segnato come disponibile...
-            if (operatore.isDisponibile()) {
-                // ...lo imposto come "Non Disponibile" e salvo la modifica.
-                operatore.setDisponibile(false);
-                userRepository.save(operatore);
-            }
-        }
-    }
 }

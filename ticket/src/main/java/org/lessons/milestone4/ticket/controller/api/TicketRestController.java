@@ -27,9 +27,8 @@ public class TicketRestController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    // -------------------------------
-    // REST API 1: Elenco di tutti i ticket
-    // -------------------------------
+ // Elenco di tutti i ticket
+
     @GetMapping
     public ResponseEntity<List<Ticket>> index() {
         List<Ticket> tickets = ticketRepository.findAll();
@@ -43,28 +42,27 @@ public class TicketRestController {
         return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
 
-    // -------------------------------
-    // REST API 2: Singolo ticket per ID
-    // -------------------------------
+   
+    // Singolo ticket per ID
+    
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> show(@PathVariable Integer id) {
         Optional<Ticket> ticketOpt = ticketRepository.findById(id);
 
         // Se non esiste un ticket con quell'ID, ritorno NOT_FOUND (404)
         if (ticketOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);//responseEntity è la risposta http che ci permette di controllare la risposta dello stato
         }
 
         // Altrimenti ritorno il ticket trovato
         return new ResponseEntity<>(ticketOpt.get(), HttpStatus.OK);
     }
 
-    // -------------------------------
-    // REST API 3: Ticket per categoria (ID categoria)
-    // -------------------------------
+    //  Ticket per categoria 
+
     @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<List<Ticket>> getByCategoria(@PathVariable Integer categoriaId) {
-        // Verifico che la categoria esista
+        // Verifico che la categoria esista grazie alla categoriarepository
         Optional<Categoria> categoriaOpt = categoriaRepository.findById(categoriaId);
 
         if (categoriaOpt.isEmpty()) {
@@ -80,9 +78,8 @@ public class TicketRestController {
         return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
 
-    // -------------------------------
-    // REST API 4: Ticket per stato (ID stato)
-    // -------------------------------
+    //  Ticket per stato 
+
     @GetMapping("/stato/id/{id}")
     public ResponseEntity<List<Ticket>> getByStatoId(@PathVariable Integer id) {
         // Verifico che esista uno stato con quell’ID

@@ -3,9 +3,7 @@ package org.lessons.milestone4.ticket.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -47,12 +45,12 @@ public class Ticket {
 
     @ManyToOne
     @JoinColumn(name = "operatore_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private User operatore;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Categoria categoria;
 
     @ManyToOne
