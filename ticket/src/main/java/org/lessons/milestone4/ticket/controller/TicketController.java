@@ -96,7 +96,6 @@ public class TicketController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable Integer id, Model model, Authentication authentication) {
-        // Cerco il ticket per ID. Se non lo trovo, gestisco l'errore.
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato!");
@@ -115,17 +114,15 @@ public class TicketController {
         return "tickets/show";
     }
 
-    // Metodo che mostra la pagina per creare un nuovo ticket.
     @GetMapping("/create")
     public String create(Model model) {
         model.addAttribute("ticket", new Ticket()); // Un ticket vuoto per il form.
         // menù select
-        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin()); // La lista di utenti a cui assegnarlo.
-        model.addAttribute("categorie", categoriaRepository.findAll()); // E le categorie.
+        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin()); 
+        model.addAttribute("categorie", categoriaRepository.findAll()); 
         return "tickets/create";
     }
 
-    // Metodo che riceve i dati del form di creazione e salva il ticket.
     @PostMapping("/create")
     public String store(@Valid @ModelAttribute("ticket") Ticket formTicket, BindingResult bindingResult,
             @RequestParam(name = "categoriaId", required = false) Integer categoriaId,
@@ -281,11 +278,11 @@ public class TicketController {
     }
 
     // --- METODI DI SUPPORTO ---
-
+//1
     private boolean ciSonoOperatoriDisponibili() {
         return getUtentiAssegnabiliDisponibili().size() > 0;
     }
-
+//2
     private void operatoreOAdmin(Ticket ticket, Authentication authentication) {
         DatabaseUserDetails userDetails = (DatabaseUserDetails) authentication.getPrincipal();
         boolean isAdmin = false;
@@ -299,7 +296,7 @@ public class TicketController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accesso negato");
         }
     }
-
+//3
     private List<User> getUtentiAssegnabiliDisponibili() {
         List<User> utentiDisponibili = new ArrayList<>();
         for (User utente : userRepository.findAll()) {
@@ -317,7 +314,7 @@ public class TicketController {
         }
         return utentiDisponibili;
     }
-
+//4
     private List<User> getUtentiConRuoloOperatoreOAdmin() {
         List<User> utenti = new ArrayList<>();
         for (User user : userRepository.findAll()) {

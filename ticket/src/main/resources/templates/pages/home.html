@@ -50,8 +50,9 @@
                     <a th:href="@{/users/show}" class="btn btn-secondary btn-lg">Vedi il tuo Profilo</a>
                 </div>
                 <div class="nav-item ms-2" sec:authorize="hasAuthority('ADMIN')">
-                    <span> <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">Crea Nuovo
-                            Ticket</span>
+                    <a class="nav-link btn btn-sm btn-success text-black" th:href="@{/tickets/create}">Crea Nuovo
+                        Ticket</a>
+
                 </div>
             </div>
         </div>

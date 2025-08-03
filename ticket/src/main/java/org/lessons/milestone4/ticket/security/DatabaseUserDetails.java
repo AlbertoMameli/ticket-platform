@@ -31,7 +31,7 @@ public class DatabaseUserDetails implements UserDetails {
         this.nome = user.getNome();
 
 
-//qui convertiamo i ruoli che abbiamo nell'Oggetto Role in Oggettiche vuole utilizzare spring GrantedAutority
+//qui convertiamo i ruoli che abbiamo nell'Oggetto Role in Oggetti che vuole utilizzare spring GrantedAutority
 //usiamo Set perche non vuole duplicati e dell'ordine poco importa
 
         this.authorities = new HashSet<>();

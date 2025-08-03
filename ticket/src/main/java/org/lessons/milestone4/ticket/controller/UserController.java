@@ -22,8 +22,6 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
 
-    // Come per il TicketController, mi faccio "iniettare" da Spring i repository
-    // che mi servono.
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -37,25 +35,15 @@ public class UserController {
     // entrato.. invece qua mi blocca prima di entrare..
     @PreAuthorize("hasAuthority('ADMIN')")
     public String index(Model model) {
-        // Prendo tutti gli utenti dal database e li passo alla vista.
         model.addAttribute("userList", userRepository.findAll());
-        return "users/index"; // Mostro la pagina 'index.html' dentro la cartella 'users'.
+        return "users/index"; 
     }
 
-    /**
-     * Questo metodo mostra la pagina del profilo personale dell'utente che ha fatto
-     * il login.
-     */
     @GetMapping("/show")
     public String show(Model model, Authentication authentication) {
-        // Devo recuperare i dati dell'utente loggato.
-        // Uso il suo nome (l'email) per cercarlo nel database.
         Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
 
-        // Controllo se l'utente è stato trovato.
         if (userOpt.isEmpty()) {
-            // Se non lo trovo, qualcosa è andato storto. La cosa più sicura
-            // è reindirizzarlo alla pagina di logout per fargli rifare il login.
             return "redirect:/logout";
         }
 
@@ -72,9 +60,6 @@ public class UserController {
         return "users/show"; // Mostro la pagina del profilo.
     }
 
-    /**
-     * Questo metodo mostra il form per modificare il proprio profilo.
-     */
     @GetMapping("/edit")
     public String edit(Model model, Authentication authentication) {
         Optional<User> userOpt = userRepository.findByEmail(authentication.getName());
@@ -97,9 +82,6 @@ public class UserController {
         return "users/edit";
     }
 
-    /**
-     * Questo metodo riceve i dati dal form e salva le modifiche al profilo.
-     */
     @PostMapping("/edit")
     public String update(@ModelAttribute("utente") User formUtente, Authentication authentication,
             RedirectAttributes redirectAttributes) {
@@ -111,9 +93,7 @@ public class UserController {
 
         User userDaSalvare = userOpt.get();
 
-        // Se sta cercando di diventare "non disponibile"...
         if (!formUtente.isDisponibile()) {
-            // Controllo se ha almeno un ticket in stato "Da fare" o "In corso"
             List<String> statiAttivi = List.of("Da fare", "In corso");
             int ticketAttivi = ticketRepository.countByOperatoreIdAndStato_ValoreIn(userDaSalvare.getId(), statiAttivi);
 

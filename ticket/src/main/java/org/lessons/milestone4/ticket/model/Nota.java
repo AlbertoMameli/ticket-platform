@@ -27,7 +27,7 @@ public class Nota {
 
     @NotBlank(message = "Il testo della nota non può essere vuoto!")
     @Column(columnDefinition = "TEXT") // Meglio per testi lunghi
-    private String testo; // Rinomino in "testo" per semplicità
+    private String testo; 
 
     @NotNull(message = "La data di creazione non può essere vuota!")
     @PastOrPresent(message = "La data di creazione non può essere futura")

@@ -12,12 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration // questa non è una classe normale, ma una classe di configurazione..
-@EnableWebSecurity // sto dicendo che queste istruzioni sono di Spring
+@EnableWebSecurity
 public class SecurityConfiguration {
 
-
-    //Come ho detto prima questa è una classe di configurazione delle autorizzazioni, 
-    //gestisce il login e logaout e protegge le rotte del progetto
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(requests -> requests
@@ -32,19 +29,14 @@ public class SecurityConfiguration {
                 .hasAuthority("ADMIN")
 
                 // REGOLE GENERALI
-                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()// basta essersi
-                                                                                                   // autenticato per
-                                                                                                   // vedere queste
-                                                                                                   // pagine
-                .requestMatchers("/**").permitAll())// queste possono essere accessibili a tutti
-                // ... dentro il tuo SecurityFilterChain per il web
-
+                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()// basta essersiautenticato per vedere queste pagine
+                .requestMatchers("/**").permitAll())
+                //relativo al login
                 .formLogin(form -> form
                         .loginPage("/") // login i trova  si trova alla homepage.
-                        .loginProcessingUrl("/login")//usrname e password ti arrivano tramite url /login
-                        .failureUrl("/?error=true") // se il login fallisce, torna alla homepage con
-                                                    // un parametro di errore.
-                        .permitAll() // Permetti a tutti di vedere la pagina di login.
+                        .loginProcessingUrl("/login")
+                        .failureUrl("/?error=true") // se il login fallisce, torna alla homepage con un parametro di errore.
+                        .permitAll() 
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/"))// dopo il logout torniamo alla homepage
                 .cors(cors -> cors.disable())
@@ -62,11 +54,11 @@ public class SecurityConfiguration {
 
     @Bean
     DatabaseUserDetailsService userDetailsService() {
-        return new DatabaseUserDetailsService();
+        return new DatabaseUserDetailsService();//recuperiamo l'utente
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {// codifica le password e non le mostra in chiaro
+    PasswordEncoder passwordEncoder() {//codifico la password
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 

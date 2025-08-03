@@ -13,7 +13,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -32,11 +36,6 @@ public class NotaController {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * la GetMapping create è gestita dal controller di ticket, essendo figlia di Ticket
-     * Questo metodo crea una nuova nota e la associa a un ticket esistente.
-     * Risponde a una richiesta POST su un URL come /tickets/15/note
-     */
     @PostMapping("/tickets/{ticketId}/note")
     public String store(@PathVariable Integer ticketId, @RequestParam("testo") String testoNota,
             Authentication authentication, RedirectAttributes redirectAttributes) {
@@ -49,14 +48,7 @@ public class NotaController {
         }
         Ticket ticket = optionalTicket.get();
 
-        // Controllo che il testo della nota non sia nullo o vuoto (anche dopo aver
-        // tolto gli spazi).
         if (testoNota == null || testoNota.trim().isEmpty()) {
-            // Se la validazione fallisce, non ritorno la vista direttamente.
-            // Uso RedirectAttributes per inviare un messaggio di errore alla pagina
-            // precedente.
-            // Questo è meglio perché non devo ricaricare tutti i dati della pagina del
-            // ticket qui.
             redirectAttributes.addFlashAttribute("erroreNota", "Il testo della nota non può essere vuoto.");
             // Reindirizzo l'utente alla stessa pagina da cui è venuto.
             return "redirect:/tickets/" + ticketId;
@@ -83,14 +75,9 @@ public class NotaController {
         // Salvo la nota nel database.
         notaRepository.save(nuovaNota);
 
-        // Reindirizzo l'utente alla pagina del ticket, dove vedrà la nuova nota
-        // aggiunta.
         return "redirect:/tickets/" + ticketId;
     }
 
-    /**
-     * Mostra il form per modificare una nota esistente.
-     */
     @GetMapping("/note/{id}/edit")
     public String edit(@PathVariable Integer id, Model model) {
         // Cerco la nota da modificare nel database.
@@ -106,9 +93,6 @@ public class NotaController {
         return "note/edit"; // Mostro la pagina di modifica.
     }
 
-    /**
-     * Riceve i dati dal form di modifica e aggiorna la nota.
-     */
     @PostMapping("/note/{id}") 
     public String update(@PathVariable Integer id, @ModelAttribute("nota") Nota formNota,
             BindingResult bindingResult) {
@@ -128,8 +112,6 @@ public class NotaController {
 
         // Se ci sono errori...
         if (bindingResult.hasErrors()) {
-            // ...devo assicurarmi che l'oggetto 'nota' che restituisco alla vista
-            // abbia ancora il suo ticket, altrimenti la pagina potrebbe dare errore.
             formNota.setTicket(notaDaAggiornare.getTicket());
             return "note/edit"; // Ritorno alla pagina di modifica per mostrare l'errore.
         }
@@ -144,20 +126,15 @@ public class NotaController {
         return "redirect:/tickets/" + notaDaAggiornare.getTicket().getId();
     }
 
-    /**
-     * Cancella una nota.
-     */
     @PostMapping("/note/{id}/delete")
     public String delete(@PathVariable Integer id) {
-        // Cerco la nota da cancellare.
+
         Optional<Nota> optionalNota = notaRepository.findById(id);
         if (optionalNota.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nota da cancellare non trovata");
         }
         Nota nota = optionalNota.get();
 
-        // Mi devo salvare l'ID del ticket PRIMA di cancellare la nota,
-        // altrimenti lo perderei e non saprei a quale pagina reindirizzare l'utente.
         Integer ticketId = nota.getTicket().getId();
 
         // Cancello la nota.
