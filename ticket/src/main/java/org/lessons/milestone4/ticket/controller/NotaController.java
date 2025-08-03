@@ -140,7 +140,6 @@ public class NotaController {
         // Cancello la nota.
         notaRepository.deleteById(id);
 
-        // Reindirizzo alla pagina del ticket.
         return "redirect:/tickets/" + ticketId;
     }
 }

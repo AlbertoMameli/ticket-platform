@@ -72,14 +72,14 @@ public class TicketController {
         }
 
         List<Ticket> tickets;
-
+//se sono admin e in base alla barra di ricerca 
         if (isAdmin) {
             if (keyword != null && !keyword.isEmpty()) {
                 tickets = ticketRepository.findByTitoloContainingIgnoreCase(keyword);
             } else {
                 tickets = ticketRepository.findAll();
             }
-        } else {
+        } else {//non  sono admin alloraa
             if (keyword != null && !keyword.isEmpty()) {
                 tickets = ticketRepository.findByOperatoreIdAndTitoloContainingIgnoreCase(utenteLoggato.getId(), keyword);
             } else {
@@ -102,7 +102,6 @@ public class TicketController {
         } // assegno alla lista dei tickets il ticket..
         Ticket ticket = optionalTicket.get();
 
-        // Controllo se l'utente ha il permesso di vedere questo ticket.
         operatoreOAdmin(ticket, authentication);
 
         // Passo tutti i dati necessari alla pagina di dettaglio.

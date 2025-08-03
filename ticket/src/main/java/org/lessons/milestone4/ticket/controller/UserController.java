@@ -33,7 +33,7 @@ public class UserController {
     // È un modo più diretto e dichiarativo per gestire la sicurezza.
     // il metodo che ho usato nel ticketcontroller eseguiva il controllo una volta
     // entrato.. invece qua mi blocca prima di entrare..
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')") //aop non è un annotazione di mvc, si tratta di programmazione orientati agli aspetti 
     public String index(Model model) {
         model.addAttribute("userList", userRepository.findAll());
         return "users/index"; 
@@ -46,8 +46,6 @@ public class UserController {
         if (userOpt.isEmpty()) {
             return "redirect:/logout";
         }
-
-        // Se l'utente è stato trovato, lo estraggo dall'Optional.
         User utente = userOpt.get();
 
         // Ora cerco tutti i ticket che sono stati assegnati a questo utente.
