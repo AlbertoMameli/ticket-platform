@@ -10,13 +10,7 @@ import org.lessons.milestone4.ticket.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-/*
- * è il ponte tra la nostra classe user e la classe di spring per il sistema di autenticazione, 
- * non possiamo usare la nostra entità user per le autenticazioni,
- *  ma dobbiamo richiamare i metodi che implementiamo con la UserDetails, un interfaccia.
- * Quando implementiamo un interfaccia dobbiamo, come da contratto,
- * utilizzarne i suoi metodi 
- */
+
 public class DatabaseUserDetails implements UserDetails {
     private final Integer id;
     private final String username;//email
@@ -30,9 +24,6 @@ public class DatabaseUserDetails implements UserDetails {
         this.password = user.getPassword();
         this.nome = user.getNome();
 
-
-//qui convertiamo i ruoli che abbiamo nell'Oggetto Role in Oggetti che vuole utilizzare spring GrantedAutority
-//usiamo Set perche non vuole duplicati e dell'ordine poco importa
 
         this.authorities = new HashSet<>();
         for (Role role : user.getRoles() ){

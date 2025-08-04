@@ -28,11 +28,6 @@ public class UserController {
     private TicketRepository ticketRepository;
 
     @GetMapping
-    // Invece di un controllo manuale, uso questa annotazione di Spring Security.
-    // Dice: "Solo un utente che ha l'autorità 'ADMIN' può eseguire questo metodo".
-    // È un modo più diretto e dichiarativo per gestire la sicurezza.
-    // il metodo che ho usato nel ticketcontroller eseguiva il controllo una volta
-    // entrato.. invece qua mi blocca prima di entrare..
     @PreAuthorize("hasAuthority('ADMIN')") //aop non è un annotazione di mvc, si tratta di programmazione orientati agli aspetti 
     public String index(Model model) {
         model.addAttribute("userList", userRepository.findAll());

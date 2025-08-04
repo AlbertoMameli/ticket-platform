@@ -39,7 +39,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/tickets")
 public class TicketController {
-
+// ! field injection
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired

@@ -17,7 +17,7 @@
             </div>
 
             <div  th:if="*{tickets.isEmpty()}" class="alert alert-info mt-5">
-                Nessun ticket attualmente assegnato.
+                <span>Nessun ticket trovato.</span>
             </div>
         </form>
         <table th:unless="${tickets.isEmpty()}" class="table table-striped align-middle">

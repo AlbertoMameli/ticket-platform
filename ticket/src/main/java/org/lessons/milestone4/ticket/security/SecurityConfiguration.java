@@ -11,7 +11,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration // questa non è una classe normale, ma una classe di configurazione..
+@Configuration 
 @EnableWebSecurity
 public class SecurityConfiguration {
 

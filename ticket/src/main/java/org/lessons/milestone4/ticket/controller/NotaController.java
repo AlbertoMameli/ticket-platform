@@ -43,7 +43,6 @@ public class NotaController {
         //  Trovo il ticket a cui associare la nota 
         Optional<Ticket> optionalTicket = ticketRepository.findById(ticketId);
         if (optionalTicket.isEmpty()) {
-            // Se il ticket non esiste, non posso aggiungere una nota. Blocco tutto.
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato");
         }
         Ticket ticket = optionalTicket.get();
