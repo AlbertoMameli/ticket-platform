@@ -53,7 +53,7 @@ public class TicketController {
 
     @GetMapping
     public String index(Model model, Authentication authentication,
-            @RequestParam(name = "q", required = false) String keyword /* barra di riercaaaa */) {
+            @RequestParam(name = "q", required = false) String keyword ) {
         Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());
         User utenteLoggato;
         if (optionalUser.isPresent()) {
@@ -117,7 +117,7 @@ public class TicketController {
     public String create(Model model) {
         model.addAttribute("ticket", new Ticket()); // Un ticket vuoto per il form.
         // menù select
-        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin()); 
+        model.addAttribute("users", getUtentiAssegnabiliDisponibili()); 
         model.addAttribute("categorie", categoriaRepository.findAll()); 
         return "tickets/create";
     }
@@ -140,7 +140,7 @@ public class TicketController {
 
         // Se ci sono errori, ricarica i dati e torna alla form
         if (bindingResult.hasErrors()) {
-            model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin());
+            model.addAttribute("users", getUtentiAssegnabiliDisponibili());
             model.addAttribute("categorie", categoriaRepository.findAll());
             model.addAttribute("categoriaId", categoriaId);
             model.addAttribute("operatoreId", operatoreId);
@@ -175,7 +175,7 @@ public class TicketController {
         operatoreOAdmin(ticket, authentication); // Solito controllo di sicurezza.
 
         model.addAttribute("ticket", ticket); // Passo il ticket da modificare.
-        model.addAttribute("users", getUtentiConRuoloOperatoreOAdmin());
+        model.addAttribute("users",  getUtentiAssegnabiliDisponibili());
         model.addAttribute("categorie", categoriaRepository.findAll());
 
         return "tickets/edit";
@@ -313,18 +313,6 @@ public class TicketController {
         }
         return utentiDisponibili;
     }
-//4
-    private List<User> getUtentiConRuoloOperatoreOAdmin() {
-        List<User> utenti = new ArrayList<>();
-        for (User user : userRepository.findAll()) {
-            for (Role role : user.getRoles()) {
-                if (role.getNome().equals("OPERATORE") || role.getNome().equals("ADMIN")) {
-                    utenti.add(user);
-                    break;
-                }
-            }
-        }
-        return utenti;
-    }
+
 
 }

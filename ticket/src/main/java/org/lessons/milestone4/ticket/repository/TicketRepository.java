@@ -12,7 +12,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     // Cerca tramite il campo 'valore' dell'entità Stato
     List<Ticket> findByStato_Valore(String statoValore);
-    //id statoper restapi
+    //id stato per restapi
     List<Ticket> findByStatoId (Integer id);
 
     List<Ticket> findByCategoriaId(Integer categoriaId);

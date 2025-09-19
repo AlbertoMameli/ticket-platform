@@ -16,7 +16,7 @@
                     Cerca <i class="fas fa-search"></i> </button>
             </div>
 
-            <div  th:if="*{tickets.isEmpty()}" class="alert alert-info mt-5">
+            <div th:if="*{tickets.isEmpty()}" class="alert alert-info mt-5">
                 <span>Nessun ticket trovato.</span>
             </div>
         </form>
@@ -44,6 +44,8 @@
                             th:if="${#authorization.expression('hasAuthority(''ADMIN'')') or #authentication.principal.id == ticket.operatore.id}"
                             th:action="@{/tickets/{id}/editStato(id=${ticket.id})}" method="POST">
                             <select name="statoId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <!--js-->
+
                                 <option th:each="stato : ${stati}" th:value="${stato.id}" th:text="${stato.valore}"
                                     th:selected="${stato.id == ticket.stato.id}"></option>
                             </select>

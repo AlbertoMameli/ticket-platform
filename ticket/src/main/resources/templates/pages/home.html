@@ -2,6 +2,9 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/head:: head('Home')}"></head>
+<head>
+<link rel="stylesheet" th:href="@{/css/application.css}">
+</head>
 
 <body class="bg-secondary-subtle">
     <header th:replace="~{fragments/navbar :: navbar}"></header>
