@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController // Indico che questa classe espone RestApi quindi non restituisce html ma json
-@RequestMapping("/api/tickets") 
+@RequestMapping("/api/tickets")
 public class TicketRestController {
 
     @Autowired
@@ -26,8 +26,6 @@ public class TicketRestController {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
-
-  
 
     @GetMapping
     public ResponseEntity<List<Ticket>> index() {
@@ -40,7 +38,6 @@ public class TicketRestController {
         // Altrimenti ritorno la lista con OK (200)
         return new ResponseEntity<>(tickets, HttpStatus.OK);// dammi il corpo e lo stato
     }
-
 
     @GetMapping("/{id}") // prendo il singolo ticket tramite id
     public ResponseEntity<Ticket> show(@PathVariable Integer id) {
@@ -71,7 +68,6 @@ public class TicketRestController {
 
         return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
-
 
     @GetMapping("/stato/{id}")
     public ResponseEntity<List<Ticket>> getByStatoId(@PathVariable Integer id) {

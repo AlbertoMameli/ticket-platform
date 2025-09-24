@@ -29,7 +29,7 @@ public class SecurityConfiguration {
                 .hasAuthority("ADMIN")
 
                 // REGOLE GENERALI
-                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()// basta essersiautenticato per vedere queste pagine
+                .requestMatchers("/tickets", "/tickets/*", "/users/**", "/note/**").authenticated()// basta essersi autenticato per vedere queste pagine
                 .requestMatchers("/**").permitAll())
                 //relativo al login
                 .formLogin(form -> form

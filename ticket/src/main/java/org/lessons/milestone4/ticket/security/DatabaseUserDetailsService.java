@@ -11,7 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DatabaseUserDetailsService implements UserDetailsService  {
+public class DatabaseUserDetailsService implements UserDetailsService  {// interfaccia... ovvero prendo i metodi e li implemento nella mia classe, come il metodo 
+    //load by username che è nell'interfaccia userdetailsservice..
 //questa è la nostra classe che controlla chi fa l'accesso e lo verifica tramite findbyemail, se trova l'utente lo salva come new databaseuserdetails, 
 //altrimenti  username not found
     @Autowired

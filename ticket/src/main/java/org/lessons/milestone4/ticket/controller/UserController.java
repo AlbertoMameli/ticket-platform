@@ -28,7 +28,7 @@ public class UserController {
     private TicketRepository ticketRepository;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')") //aop non è un annotazione di mvc, si tratta di programmazione orientati agli aspetti 
+    @PreAuthorize("hasAuthority('ADMIN')")
     public String index(Model model) {
         model.addAttribute("userList", userRepository.findAll());
         return "users/index"; 

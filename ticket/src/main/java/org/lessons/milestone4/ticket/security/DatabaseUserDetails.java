@@ -24,14 +24,13 @@ public class DatabaseUserDetails implements UserDetails {
         this.password = user.getPassword();
         this.nome = user.getNome();
 
-
         this.authorities = new HashSet<>();
         for (Role role : user.getRoles() ){
             //prendiamo la lista dei ruoli e andiamo a trasformarlo in un  nuovo oggetto di spring SimpleGrantedAuthority
             this.authorities.add(new SimpleGrantedAuthority(role.getNome()));
         }
     }
-
+ 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;

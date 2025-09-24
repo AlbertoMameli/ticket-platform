@@ -98,7 +98,7 @@ public class TicketController {
     public String show(@PathVariable Integer id, Model model, Authentication authentication) {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket non trovato!"); //404
         } // assegno alla lista dei tickets il ticket..
         Ticket ticket = optionalTicket.get();
 
@@ -172,8 +172,6 @@ public class TicketController {
         }
         Ticket ticket = optionalTicket.get();
 
-        operatoreOAdmin(ticket, authentication); // Solito controllo di sicurezza.
-
         model.addAttribute("ticket", ticket); // Passo il ticket da modificare.
         model.addAttribute("users",  getUtentiAssegnabiliDisponibili());
         model.addAttribute("categorie", categoriaRepository.findAll());
@@ -195,7 +193,6 @@ public class TicketController {
         }
         Ticket ticketToUpdate = optionalTicket.get();
 
-        operatoreOAdmin(ticketToUpdate, authentication);
 
         // Validazione
         if (formTicket.getDescrizione().trim().isEmpty())
@@ -268,8 +265,6 @@ public class TicketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket da eliminare non trovato!");
         }
         Ticket ticket = optionalTicket.get();
-
-        operatoreOAdmin(ticket, authentication);
 
         ticketRepository.delete(ticket);
 
