@@ -52,7 +52,7 @@ public class TicketRestController {
         return new ResponseEntity<>(ticketOpt.get(), HttpStatus.OK);
     }
 
-    @GetMapping("/categoria/{id}")
+    @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<List<Ticket>> getByCategoria(@PathVariable Integer categoriaId) {
         Optional<Categoria> categoriaOpt = categoriaRepository.findById(categoriaId);
 
@@ -69,16 +69,16 @@ public class TicketRestController {
         return new ResponseEntity<>(tickets, HttpStatus.OK);
     }
 
-    @GetMapping("/stato/{id}")
-    public ResponseEntity<List<Ticket>> getByStatoId(@PathVariable Integer id) {
+    @GetMapping("/stato/{statoId}")
+    public ResponseEntity<List<Ticket>> getByStatoId(@PathVariable Integer statoId) {
         // Verifico che esista uno stato con quell’ID
-        Optional<Stato> statoOpt = statoRepository.findById(id);
+        Optional<Stato> statoOpt = statoRepository.findById(statoId);
 
         if (statoOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        List<Ticket> tickets = ticketRepository.findByStatoId(id);
+        List<Ticket> tickets = ticketRepository.findByStatoId(statoId);
 
         if (tickets.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
